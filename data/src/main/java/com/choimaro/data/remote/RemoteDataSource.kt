@@ -1,8 +1,8 @@
-package com.choimaro.domain.image.repository
+package com.choimaro.data.remote
 
 import com.choimaro.domain.ResponseState
 
-interface ImageRepository {
+interface RemoteDataSource {
     suspend fun getImageSearchResult(
         query: String,
         sort: String,

@@ -1,4 +1,4 @@
-package com.choimaro.data
+package com.choimaro.domain2
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
@@ -17,6 +17,6 @@ class ExampleInstrumentedTest {
     fun useAppContext() {
         // Context of the app under test.
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext
-        assertEquals("com.choimaro.data.test", appContext.packageName)
+        assertEquals("com.choimaro.domain2.test", appContext.packageName)
     }
 }

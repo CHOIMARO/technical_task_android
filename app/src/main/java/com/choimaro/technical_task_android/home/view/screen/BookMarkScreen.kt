@@ -7,9 +7,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
+import com.choimaro.technical_task_android.home.viewmodel.MainViewModel
 
 @Composable
-fun BookMarkScreen(navHostController: NavHostController) {
+fun BookMarkScreen(navHostController: NavHostController, viewModel: MainViewModel) {
     Box(
         modifier = Modifier
             .fillMaxSize(),

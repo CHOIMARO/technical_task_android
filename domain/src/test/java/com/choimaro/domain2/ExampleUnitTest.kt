@@ -1,4 +1,4 @@
-package com.choimaro.data
+package com.choimaro.domain2
 
 import org.junit.Assert.assertEquals
 import org.junit.Test
