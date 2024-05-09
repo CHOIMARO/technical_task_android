@@ -1,7 +1,9 @@
 package com.choimaro.data.image.repository
 
+import com.choimaro.data.local.LocalDataSource
 import com.choimaro.data.remote.RemoteDataSource
 import com.choimaro.domain.ResponseState
+import com.choimaro.domain.entity.BookMarkEntity
 import com.choimaro.domain.image.repository.ImageRepository
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext

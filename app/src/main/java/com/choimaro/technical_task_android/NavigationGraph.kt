@@ -10,16 +10,18 @@ import com.choimaro.technical_task_android.home.view.screen.SearchScreen
 import com.choimaro.technical_task_android.home.viewmodel.MainViewModel
 
 @Composable
-fun NavigationGraph(navController: NavHostController) {
-    val viewModel: MainViewModel = hiltViewModel()
+fun NavigationGraph(
+    navController: NavHostController,
+    mainViewModel: MainViewModel
+) {
     NavHost(
         navController = navController,
         startDestination = ScreenType.SearchScreen.route) {
         composable(route = ScreenType.SearchScreen.route) {
-            SearchScreen(navController, viewModel)
+            SearchScreen(navController, mainViewModel)
         }
         composable(route = ScreenType.BookMarkScreen.route) {
-            BookMarkScreen(navController, viewModel)
+            BookMarkScreen(navController, mainViewModel)
         }
     }
 }

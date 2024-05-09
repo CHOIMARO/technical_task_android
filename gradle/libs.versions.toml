@@ -24,6 +24,7 @@ materialVersion = "1.6.7"
 navVersion = "2.7.7"
 okhttp = "4.10.0"
 retrofit = "2.9.0"
+roomRuntime = "2.6.1"
 splashScreenVersion = "1.0.1"
 
 [libraries]
@@ -34,6 +35,10 @@ androidx-hilt-lifecycle-viewmodel = { module = "androidx.hilt:hilt-lifecycle-vie
 androidx-hilt-navigation-compose = { module = "androidx.hilt:hilt-navigation-compose", version.ref = "hiltNavigationCompose" }
 androidx-material = { module = "androidx.compose.material:material", version.ref = "materialVersion" }
 androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navVersion" }
+androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "roomRuntime" }
+androidx-room-ktx = { module = "androidx.room:room-ktx", version.ref = "roomRuntime" }
+androidx-room-common = { module = "androidx.room:room-common", version.ref = "roomRuntime" }
+androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "roomRuntime" }
 coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coilCompose" }
 converter-gson = { module = "com.squareup.retrofit2:converter-gson", version.ref = "converterGson" }
 gson = { module = "com.google.code.gson:gson", version.ref = "gson" }

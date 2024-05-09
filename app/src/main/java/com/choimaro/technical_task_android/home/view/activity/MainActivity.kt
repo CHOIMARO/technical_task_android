@@ -36,28 +36,28 @@ import com.choimaro.technical_task_android.home.viewmodel.MainViewModel
 import com.choimaro.technical_task_android.ui.theme.Technical_task_androidTheme
 import dagger.hilt.android.AndroidEntryPoint
 
-@OptIn(ExperimentalFoundationApi::class)
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         installSplashScreen()
         setContent {
+            val mainViewModel: MainViewModel = hiltViewModel()
             Technical_task_androidTheme {
-                MainScreenView()
+                MainScreenView(mainViewModel)
             }
         }
     }
 }
 @Composable
-fun MainScreenView() {
+fun MainScreenView(mainViewModel: MainViewModel) {
     val navController = rememberNavController()
     Scaffold(
         topBar = { TopBar(navController = navController)},
         bottomBar = { BottomBarNavigation(navController = navController) }
     ) {
         Box(Modifier.padding(it)){
-            NavigationGraph(navController = navController)
+            NavigationGraph(navController = navController, mainViewModel)
         }
     }
 }

@@ -17,14 +17,6 @@ data class ImageModel(
     val datetime: String?,
     val itemType: SearchListType,
     val docUrl: String?,
-    override val isBookMark: Boolean = false
-) : Parcelable, BaseDocument() {
-    @IgnoredOnParcel
-    override val id: String = generateHash(imageUrl + docUrl) // 고유 아이디
-    override fun generateHash(input: String): String {
-        val bytes = input.toByteArray()
-        val md = MessageDigest.getInstance("SHA-256")
-        val digest = md.digest(bytes)
-        return digest.fold("") { str, it -> str + "%02x".format(it) }
-    }
-}
+    override var isCheckedBookMark: Boolean = false,
+    override var id: String
+) : Parcelable, BaseDocument()

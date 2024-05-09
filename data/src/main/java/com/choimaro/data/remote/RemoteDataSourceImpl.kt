@@ -1,5 +1,6 @@
 package com.choimaro.data.remote
 
+import com.choimaro.data.local.LocalDataSource
 import com.choimaro.data.service.KakaoService
 import com.choimaro.domain.extensions.getFormattedDate
 import com.choimaro.domain.ResponseState
@@ -7,9 +8,11 @@ import com.choimaro.domain.model.ErrorResponse
 import com.choimaro.domain.model.SearchListType
 import com.choimaro.domain.model.image.ImageModel
 import com.google.gson.Gson
+import java.security.MessageDigest
 import javax.inject.Inject
 
 class RemoteDataSourceImpl @Inject constructor(
+    private val localDataSource: LocalDataSource,
     private val kakaoService: KakaoService
 ): RemoteDataSource {
     override suspend fun getImageSearchResult(
@@ -21,6 +24,7 @@ class RemoteDataSourceImpl @Inject constructor(
         try {
             kakaoService.searchImage(query, sort, page, size).let { response ->
                 if (response.isSuccessful) {
+                    val checkedBookMarkList = localDataSource.getAllBookMark()
                     val imageModelList = response.body()?.documents?.map { imageDocument ->
                         ImageModel(
                             thumbnailUrl = imageDocument.thumbnailUrl,
@@ -29,7 +33,8 @@ class RemoteDataSourceImpl @Inject constructor(
                             datetime = imageDocument.dateTime?.getFormattedDate() ?: "Unknown date",
                             itemType = SearchListType.IMAGE,
                             docUrl = imageDocument.docUrl,
-                            isBookMark = false
+                            isCheckedBookMark = checkedBookMarkList.any { it.id == generateHash(imageDocument.imageUrl + imageDocument.docUrl + SearchListType.IMAGE.name) },
+                            id = generateHash(imageDocument.imageUrl + imageDocument.docUrl + SearchListType.IMAGE.name)
                         )
                     } ?: arrayListOf()
 
@@ -46,5 +51,10 @@ class RemoteDataSourceImpl @Inject constructor(
             return ResponseState.Fail(e.message ?: "")
         }
     }
-
+    private fun generateHash(input: String): String {
+        val bytes = input.toByteArray()
+        val md = MessageDigest.getInstance("SHA-256")
+        val digest = md.digest(bytes)
+        return digest.fold("") { str, it -> str + "%02x".format(it) }
+    }
 }
