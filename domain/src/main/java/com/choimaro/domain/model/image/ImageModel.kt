@@ -15,7 +15,7 @@ data class ImageModel(
     val imageUrl: String?,
     val displaySiteName: String?,
     val datetime: String?,
-    val itemType: SearchListType,
+    val itemType: SearchListType = SearchListType.IMAGE,
     val docUrl: String?,
     override var isCheckedBookMark: Boolean = false,
     override var id: String

@@ -21,18 +21,17 @@ class PagingSource @Inject constructor(
 ) : PagingSource<Int, ImageModel>() {
     override suspend fun load(params: LoadParams<Int>): LoadResult<Int, ImageModel> {
         val currentPage = params.key ?: 1
-        Log.e(">>>>>", "currentPage : $currentPage")
         return try {
             kakaoService.searchImage(query, sort, currentPage, size).let { response ->
                 if (response.isSuccessful) {
                     val imageModelList = response.body()?.documents?.map { imageDocument ->
                         ImageModel(
-                            thumbnailUrl = imageDocument.thumbnailUrl,
-                            imageUrl = imageDocument.imageUrl,
-                            displaySiteName = imageDocument.displaySiteName,
+                            thumbnailUrl = imageDocument.thumbnailUrl ?: "",
+                            imageUrl = imageDocument.imageUrl ?: "",
+                            displaySiteName = imageDocument.displaySiteName ?: "",
                             datetime = imageDocument.dateTime?.getFormattedDate() ?: "Unknown date",
                             itemType = SearchListType.IMAGE,
-                            docUrl = imageDocument.docUrl,
+                            docUrl = imageDocument.docUrl ?: "",
                             isCheckedBookMark = false,
                             id = generateHash(imageDocument.imageUrl + imageDocument.docUrl + SearchListType.IMAGE.name)
                         )

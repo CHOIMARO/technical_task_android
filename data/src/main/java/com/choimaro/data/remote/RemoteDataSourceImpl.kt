@@ -64,7 +64,7 @@ class RemoteDataSourceImpl @Inject constructor(
         }
     }
 
-    override suspend fun getImageSearchResult2(
+    override suspend fun getImageSearchResultFlow(
         query: String,
         sort: String,
         page: Int,

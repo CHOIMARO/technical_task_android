@@ -173,11 +173,10 @@ fun HandleSuccessResponse(viewModel: MainViewModel, imageResults: LazyPagingItem
                 .padding(horizontal = 8.dp)
                 .fillMaxSize(),
         ) {
-
             items(imageResults.itemCount) { index ->
                 imageResults[index]?.let { imageModel ->
                     ImageDocumentItem(imageModel, bookMarkList) {
-                        viewModel.setFavorite(imageResults[index]!!)
+                        imageResults[index]?.let { viewModel.setFavorite(it) }
                     }
                 }
             }

@@ -13,7 +13,7 @@ interface ImageRepository {
         size: Int
     ): ResponseState
 
-    suspend fun getImageSearchResult2(
+    suspend fun getImageSearchResultFlow(
         query: String,
         sort: String,
         page: Int,

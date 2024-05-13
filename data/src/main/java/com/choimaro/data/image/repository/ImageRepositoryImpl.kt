@@ -1,10 +1,8 @@
 package com.choimaro.data.image.repository
 
 import androidx.paging.PagingData
-import com.choimaro.data.local.LocalDataSource
 import com.choimaro.data.remote.RemoteDataSource
 import com.choimaro.domain.ResponseState
-import com.choimaro.domain.entity.BookMarkEntity
 import com.choimaro.domain.image.repository.ImageRepository
 import com.choimaro.domain.model.image.ImageModel
 import kotlinx.coroutines.CoroutineDispatcher
@@ -25,12 +23,12 @@ class ImageRepositoryImpl @Inject constructor(
         return@withContext remoteDataSource.getImageSearchResult(query, sort, page, size)
     }
 
-    override suspend fun getImageSearchResult2(
+    override suspend fun getImageSearchResultFlow(
         query: String,
         sort: String,
         page: Int,
         size: Int
     ): Flow<PagingData<ImageModel>> = withContext(ioDispatcher){
-        return@withContext remoteDataSource.getImageSearchResult2(query, sort, page, size)
+        return@withContext remoteDataSource.getImageSearchResultFlow(query, sort, page, size)
     }
 }
