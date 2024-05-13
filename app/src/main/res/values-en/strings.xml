@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">technical_task_android</string>
+    <string name="title_activity_intro">IntroActivity</string>
+    <string name="search">Search</string>
+    <string name="book_mark">BookMark</string>
+    <string name="complete">Complete</string>
+    <string name="delete">Delete</string>
+    <string name="edit">Edit</string>
+    <string name="delete_item_count">Delete %d</string>
+    <string name="the_connection_is_not_smooth">The connection is not smooth.</string>
+    <string name="please_try_again_in_a_moment">Please try again in a moment.</string>
+    <string name="please_enter_a_search_term">Please enter a search term.</string>
+    <string name="there_are_no_search_results">There are no search results.</string>
+</resources>

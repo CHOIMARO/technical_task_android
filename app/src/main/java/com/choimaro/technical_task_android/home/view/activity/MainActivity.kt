@@ -1,7 +1,6 @@
 package com.choimaro.technical_task_android.home.view.activity
 
 import android.os.Bundle
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Box
@@ -73,7 +72,6 @@ fun MainScreenView() {
         Box(Modifier.padding(it)) {
             NavigationGraph(navController = navController, mainViewModel)
         }
-        ShowInsertBookMarkResultToast(mainViewModel = mainViewModel)
     }
 }
 
@@ -145,8 +143,6 @@ fun DeleteBookMarkContent(mainViewModel: MainViewModel = hiltViewModel()) {
         ) {
             Row {
                 Text(text = stringResource(id = R.string.delete_item_count, checkedListSize.size))
-                Spacer(modifier = Modifier.width(2.dp))
-                Text(text = stringResource(id = R.string.delete))
             }
         }
     }
@@ -193,20 +189,5 @@ fun BottomBarNavigation(navController: NavHostController) {
                 }
             )
         }
-    }
-}
-
-@Composable
-fun ShowInsertBookMarkResultToast(mainViewModel: MainViewModel) {
-    val context = LocalContext.current
-    val toastManager = remember { ToastManager(context) }
-    val insertBookMarkResult by mainViewModel.insertBookMarkResult.collectAsState()
-    LaunchedEffect(key1 = insertBookMarkResult) {
-        when (insertBookMarkResult) {
-            true -> toastManager.showToast("북마크 등록 성공", Toast.LENGTH_SHORT)
-            false -> toastManager.showToast("북마크 등록 실패", Toast.LENGTH_SHORT)
-            null -> {} // null 상태에 대한 처리 (예: 아무 것도 하지 않음)
-        }
-        mainViewModel.resetInsertBookMarkResult()
     }
 }

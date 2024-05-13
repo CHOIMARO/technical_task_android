@@ -101,12 +101,12 @@ fun SearchScreen(navHostController: NavHostController, mainViewModel: MainViewMo
                             )
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
-                                stringResource(id = R.string.you_are_not_connected),
+                                stringResource(id = R.string.the_connection_is_not_smooth),
                                 style = TechnicalTaskAndroidTypography.bodyLarge
                             )
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
-                                stringResource(id = R.string.please_try_again_in_a_few_minutes),
+                                stringResource(id = R.string.please_try_again_in_a_moment),
                                 style = TechnicalTaskAndroidTypography.bodyMedium
                             )
                         }
@@ -115,7 +115,9 @@ fun SearchScreen(navHostController: NavHostController, mainViewModel: MainViewMo
 
                 is ResponseState.Init -> {
                     Box(
-                        modifier = Modifier.fillMaxWidth(.5f)
+                        modifier = Modifier
+                            .fillMaxWidth(),
+                        contentAlignment = Alignment.Center
                     ) {
                         Column(
                             horizontalAlignment = Alignment.CenterHorizontally
@@ -125,7 +127,7 @@ fun SearchScreen(navHostController: NavHostController, mainViewModel: MainViewMo
                                 contentDescription = null,
                                 colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primary)
                             )
-                            Text(stringResource(id = R.string.please_enter_search_input))
+                            Text(stringResource(id = R.string.please_enter_a_search_term))
                         }
                     }
                     mainViewModel.setImageModelList(arrayListOf())
@@ -173,7 +175,7 @@ fun SearchScreenStateContent(viewModel: MainViewModel = hiltViewModel()) {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text(stringResource(id = R.string.no_results_were_found_for_your_search))
+                Text(stringResource(id = R.string.there_are_no_search_results))
             }
         }
     }
