@@ -9,7 +9,6 @@ import retrofit2.http.Headers
 import retrofit2.http.Query
 
 interface KakaoService {
-
     @Headers("Authorization: KakaoAK ${BuildConfig.KAKAO_API_KEY}")
     @GET("v2/search/image")
     suspend fun searchImage(

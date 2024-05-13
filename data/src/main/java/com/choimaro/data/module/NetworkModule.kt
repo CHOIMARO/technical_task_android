@@ -1,7 +1,12 @@
 package com.choimaro.data.module
 
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import com.choimaro.data.local.LocalDataSource
+import com.choimaro.data.remote.PagingSource
 import com.choimaro.data.service.KakaoService
-import com.choimaro.data.util.Utils.Companion.BASE_URL
+import com.choimaro.data.util.Utils.BASE_URL
+import com.choimaro.domain.model.image.ImageModel
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -21,9 +26,9 @@ object NetworkModule {
     @Singleton
     fun provideHttpClient():OkHttpClient {
         return OkHttpClient.Builder()
-            .readTimeout(5, TimeUnit.SECONDS)
-            .connectTimeout(5, TimeUnit.SECONDS)
-            .writeTimeout(10, TimeUnit.SECONDS)
+            .readTimeout(25, TimeUnit.SECONDS)
+            .connectTimeout(25, TimeUnit.SECONDS)
+            .writeTimeout(20, TimeUnit.SECONDS)
             .addInterceptor(getLoggingInterceptor())
             .build()
     }

@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -43,7 +42,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.SoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
@@ -51,9 +49,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
-import coil.compose.rememberAsyncImagePainter
+import androidx.paging.LoadState
+import androidx.paging.compose.LazyPagingItems
+import androidx.paging.compose.collectAsLazyPagingItems
 import com.choimaro.domain.ResponseState
 import com.choimaro.domain.model.image.ImageModel
 import com.choimaro.technical_task_android.R
@@ -66,21 +65,10 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun SearchScreen(navHostController: NavHostController, mainViewModel: MainViewModel) {
-    HandleImageSearchResult(mainViewModel)
     Column(modifier = Modifier.fillMaxSize()) {
         SearchBar(mainViewModel)
         Spacer(modifier = Modifier.height(8.dp))
         SearchResult(mainViewModel)
-    }
-}
-@Composable
-fun HandleImageSearchResult(viewModel: MainViewModel) {
-    val state by viewModel.imageSearchResult.collectAsState()
-    when (state) {
-        is ResponseState.Success<*> -> {
-            viewModel.setImageModelList((state as ResponseState.Success<*>).data as List<ImageModel>)
-        }
-        else -> {}
     }
 }
 @Composable
@@ -97,12 +85,11 @@ fun SearchBar(
 
     LaunchedEffect(searchText) {
         val trimmedText = searchText.trim()
-
         if (trimmedText != lastValidSearch) {
             job?.cancel()
             job = coroutineScope.launch {
                 delay(1000)
-                viewModel.getImageSearchResult(trimmedText)
+                launch { viewModel.getImageSearchFlowResult(trimmedText) }
                 lastValidSearch = trimmedText
             }
         }
@@ -155,52 +142,51 @@ private fun SearchTextField(
 }
 @Composable
 private fun SearchResult(mainViewModel: MainViewModel) {
-    val state by mainViewModel.imageSearchResult.collectAsState()
+    val imageResults = mainViewModel.imageModelResults.collectAsLazyPagingItems()
+    val state = imageResults.loadState
     Box(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
     ) {
-        when (state) {
-            is ResponseState.Loading -> {
-                // 로딩 상태 UI 표시
-                CircularProgressIndicator()
-            }
-
-            is ResponseState.Success<*> -> {
-                // 성공 상태 UI 표시
-                // 예: response.data를 사용하여 데이터 표시
-                HandleSuccessResponse(mainViewModel)
-            }
-
-            is ResponseState.Fail -> {
-                // 실패 상태 UI 표시
-                // 예: response.exception 메시지 표시
-                HandleFailResponse()
-            }
-
-            is ResponseState.Init -> {
-                HandleInitResponse(mainViewModel)
-            }
+        if (state.refresh is LoadState.Loading) {
+            HandleInitResponse(mainViewModel)
+        } else if (state.append is LoadState.Loading) {
+            CircularProgressIndicator()
+        } else if (state.refresh is LoadState.Error){
+            HandleFailResponse()
+        } else if (state.append is LoadState.Error) {
+            HandleFailResponse()
+        } else {
+            HandleSuccessResponse(mainViewModel, imageResults)
         }
     }
 }
 @Composable
-fun HandleSuccessResponse(viewModel: MainViewModel) {
-    val imageModelList by viewModel.imageModelList.collectAsState()
-
-    if (imageModelList.isNotEmpty()) {
+fun HandleSuccessResponse(viewModel: MainViewModel, imageResults: LazyPagingItems<ImageModel>) {
+    val bookMarkList by viewModel.bookMarkList.collectAsState()
+    if (imageResults.itemCount > 0) {
         LazyVerticalGrid(
             columns = GridCells.Fixed(2),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier.padding(horizontal = 8.dp)
+            modifier = Modifier
+                .padding(horizontal = 8.dp)
+                .fillMaxSize(),
         ) {
-            items(imageModelList) { imageModel ->
-                ImageDocumentItem(imageModel = imageModel) {
-                    viewModel.setFavorite(imageModel)
-                    viewModel.getAllBookMark()
+
+            items(imageResults.itemCount) { index ->
+                imageResults[index]?.let { imageModel ->
+                    ImageDocumentItem(imageModel, bookMarkList) {
+                        viewModel.setFavorite(imageResults[index]!!)
+                    }
                 }
             }
+            item {
+                if (imageResults.loadState.append is LoadState.Loading) {
+                    CircularProgressIndicator()
+                }
+            }
+
         }
     } else {
         Box(
@@ -218,6 +204,7 @@ fun HandleSuccessResponse(viewModel: MainViewModel) {
 @Composable
 fun ImageDocumentItem(
     imageModel: ImageModel,
+    bookMarkList: List<ImageModel>,
     clickIconButton: () -> Unit
 ) {
     Card(
@@ -225,7 +212,7 @@ fun ImageDocumentItem(
         shape = RoundedCornerShape(8.dp),
         elevation = CardDefaults.cardElevation(6.dp)
     ) {
-        BookMarkIcon(clickIconButton, imageModel)
+        BookMarkIcon(clickIconButton, imageModel, bookMarkList)
         ImageModelItem(
             imageModel = imageModel, imageModifier = Modifier
                 .height(130.dp)
@@ -237,7 +224,8 @@ fun ImageDocumentItem(
 @Composable
 private fun BookMarkIcon(
     clickIconButton: () -> Unit,
-    imageModel: ImageModel
+    imageModel: ImageModel,
+    bookMarkList: List<ImageModel>
 ) {
     Box(
         modifier = Modifier.fillMaxSize(),
@@ -247,7 +235,7 @@ private fun BookMarkIcon(
             onClick = clickIconButton
         ) {
             Icon(
-                imageVector = if (imageModel.isCheckedBookMark) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                imageVector = if (bookMarkList.any { it.id == imageModel.id }) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
                 contentDescription = "",
                 tint = Color.Black
             )
@@ -300,5 +288,4 @@ private fun HandleInitResponse(mainViewModel: MainViewModel) {
             Text(stringResource(id = R.string.please_enter_a_search_term))
         }
     }
-    mainViewModel.setImageModelList(arrayListOf())
 }

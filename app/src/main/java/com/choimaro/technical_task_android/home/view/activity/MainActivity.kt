@@ -33,6 +33,7 @@ import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.paging.compose.collectAsLazyPagingItems
 import com.choimaro.technical_task_android.NavigationGraph
 import com.choimaro.technical_task_android.R
 import com.choimaro.technical_task_android.ScreenType
@@ -57,7 +58,6 @@ class MainActivity : ComponentActivity() {
 fun MainScreenView() {
     val navController = rememberNavController()
     val mainViewModel: MainViewModel = hiltViewModel()
-
     Scaffold(
         topBar = {
             TopBar(navController = navController, mainViewModel)

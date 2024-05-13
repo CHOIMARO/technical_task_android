@@ -1,14 +1,24 @@
 package com.choimaro.data.remote
 
+import android.util.Log
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.PagingData
+import androidx.paging.PagingSource
+import androidx.paging.map
 import com.choimaro.data.R
 import com.choimaro.data.local.LocalDataSource
 import com.choimaro.data.service.KakaoService
+import com.choimaro.data.util.Utils.generateHash
 import com.choimaro.domain.extensions.getFormattedDate
 import com.choimaro.domain.ResponseState
 import com.choimaro.domain.model.ErrorResponse
 import com.choimaro.domain.model.SearchListType
 import com.choimaro.domain.model.image.ImageModel
 import com.google.gson.Gson
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.map
 import java.net.UnknownHostException
 import java.security.MessageDigest
 import javax.inject.Inject
@@ -53,10 +63,19 @@ class RemoteDataSourceImpl @Inject constructor(
             return ResponseState.Fail("")
         }
     }
-    private fun generateHash(input: String): String {
-        val bytes = input.toByteArray()
-        val md = MessageDigest.getInstance("SHA-256")
-        val digest = md.digest(bytes)
-        return digest.fold("") { str, it -> str + "%02x".format(it) }
+
+    override suspend fun getImageSearchResult2(
+        query: String,
+        sort: String,
+        page: Int,
+        size: Int
+    ): Flow<PagingData<ImageModel>> {
+        return Pager(
+            config = PagingConfig(
+                pageSize = size,
+                enablePlaceholders = false
+            ),
+            pagingSourceFactory = { PagingSource(kakaoService, localDataSource, query, sort, size) }
+        ).flow
     }
 }

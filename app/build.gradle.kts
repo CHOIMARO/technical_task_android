@@ -104,4 +104,10 @@ dependencies {
     implementation (libs.v2.friend) // 피커 API 모듈
     implementation (libs.v2.navi) // 카카오내비 API 모듈
     implementation (libs.v2.cert) // 카카오톡 인증 서비스 API 모듈
+
+    //Paging3
+    implementation (libs.androidx.paging.runtime.ktx)
+    implementation (libs.androidx.paging.compose)
+
+
 }
