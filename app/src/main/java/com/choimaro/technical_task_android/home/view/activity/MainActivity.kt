@@ -5,7 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -20,18 +20,14 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
-import androidx.core.view.WindowCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
@@ -42,7 +38,6 @@ import com.choimaro.technical_task_android.R
 import com.choimaro.technical_task_android.ScreenType
 import com.choimaro.technical_task_android.home.viewmodel.MainViewModel
 import com.choimaro.technical_task_android.ui.theme.TechnicalTaskAndroidTheme
-import com.choimaro.technical_task_android.util.ToastManager
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -86,52 +81,65 @@ fun TopBar(
     val isClickedEditButton by mainViewModel.isClickEditButton.collectAsState()
     TopAppBar(
         title = {
-            Text(
-                text =
-                when (currentRoute) {
-                    ScreenType.SearchScreen.route -> {
-                        stringResource(id = R.string.search)
-                    }
-
-                    ScreenType.BookMarkScreen.route -> {
-                        stringResource(id = R.string.book_mark)
-                    }
-
-                    else -> {
-                        ""
-                    }
-                }
-            )
+            TopAppBarTitle(currentRoute)
         },
         actions = {
             // 편집 버튼 추가
-            if (currentRoute == ScreenType.BookMarkScreen.route) {
-                if (isClickedEditButton) {
-                    Row {
-                        DeleteBookMarkContent(mainViewModel)
-                        Button(
-                            onClick = { mainViewModel.clickEditButton() }
-                        ) {
-                            Text(text = stringResource(id = R.string.complete))
-                        }
-                    }
-                } else {
-                    IconButton(
-                        onClick = { mainViewModel.clickEditButton() },
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_edit), // 이 부분에서 자신의 편집 아이콘 리소스를 사용하세요
-                            contentDescription = ""
-                        )
-                    }
-                }
+            TopAppBarAction(currentRoute, isClickedEditButton, mainViewModel)
+        }
+    )
+}
+@Composable
+private fun TopAppBarTitle(currentRoute: String?) {
+    Text(
+        text =
+        when (currentRoute) {
+            ScreenType.SearchScreen.route -> {
+                stringResource(id = R.string.search)
+            }
+
+            ScreenType.BookMarkScreen.route -> {
+                stringResource(id = R.string.book_mark)
+            }
+
+            else -> {
+                ""
             }
         }
     )
 }
 
 @Composable
-fun DeleteBookMarkContent(mainViewModel: MainViewModel = hiltViewModel()) {
+private fun TopAppBarAction(
+    currentRoute: String?,
+    isClickedEditButton: Boolean,
+    mainViewModel: MainViewModel
+) {
+    if (currentRoute == ScreenType.BookMarkScreen.route) {
+        if (isClickedEditButton) {
+            Row {
+                DeleteBookMarkButton(mainViewModel)
+                CompleteEditButton(mainViewModel)
+            }
+        } else {
+            EditButton(mainViewModel)
+        }
+    }
+}
+
+@Composable
+private fun EditButton(mainViewModel: MainViewModel) {
+    IconButton(
+        onClick = { mainViewModel.clickEditButton() },
+    ) {
+        Icon(
+            painter = painterResource(id = R.drawable.ic_edit), // 이 부분에서 자신의 편집 아이콘 리소스를 사용하세요
+            contentDescription = ""
+        )
+    }
+}
+@Composable
+fun DeleteBookMarkButton(mainViewModel: MainViewModel) {
     val checkedListSize by mainViewModel.checkedBookMarkList.collectAsState()
     val isClickEditButton by mainViewModel.isClickEditButton.collectAsState()
     if (isClickEditButton) {
@@ -147,6 +155,14 @@ fun DeleteBookMarkContent(mainViewModel: MainViewModel = hiltViewModel()) {
         }
     }
 }
+@Composable
+private fun CompleteEditButton(mainViewModel: MainViewModel) {
+    Button(
+        onClick = { mainViewModel.clickEditButton() }
+    ) {
+        Text(text = stringResource(id = R.string.complete))
+    }
+}
 
 @Composable
 fun BottomBarNavigation(navController: NavHostController) {
@@ -154,40 +170,48 @@ fun BottomBarNavigation(navController: NavHostController) {
         ScreenType.SearchScreen,
         ScreenType.BookMarkScreen
     )
-    NavigationBar(
-    ) {
+    NavigationBar {
         val navBackStackEntry by navController.currentBackStackEntryAsState()
         val currentRoute = navBackStackEntry?.destination?.route
 
         items.forEach { item ->
-            NavigationBarItem(
-                icon = {
-                    Icon(
-                        painter = painterResource(id = item.icon),
-                        contentDescription = stringResource(id = item.title),
-                        modifier = Modifier
-                            .width(26.dp)
-                            .height(26.dp)
-                    )
-                },
-                label = { Text(stringResource(id = item.title), fontSize = 9.sp) },
-                selected = currentRoute == item.route,
-                alwaysShowLabel = false,
-                onClick = {
-                    // 현재 스크린과 다를 때만 navigate 실행
-                    if (currentRoute != item.route) {
-                        navController.navigate(item.route) {
-                            // 동일한 스크린을 재생성하지 않고, 최상위에 올림
-                            launchSingleTop = true
-                            // 이미 스택에 있는 스크린으로 이동할 경우, 그 스크린을 최상위로 만들고, 그 위에 있던 스크린을 모두 제거
-                            restoreState = true
-                            popUpTo(navController.graph.findStartDestination().id) {
-                                saveState = true
-                            }
-                        }
-                    }
-                }
-            )
+            CreateNavigationBarItem(item, currentRoute, navController)
         }
     }
+}
+
+@Composable
+private fun RowScope.CreateNavigationBarItem(
+    item: ScreenType,
+    currentRoute: String?,
+    navController: NavHostController
+) {
+    NavigationBarItem(
+        icon = {
+            Icon(
+                painter = painterResource(id = item.icon),
+                contentDescription = stringResource(id = item.title),
+                modifier = Modifier
+                    .width(26.dp)
+                    .height(26.dp)
+            )
+        },
+        label = { Text(stringResource(id = item.title), fontSize = 9.sp) },
+        selected = currentRoute == item.route,
+        alwaysShowLabel = false,
+        onClick = {
+            // 현재 스크린과 다를 때만 navigate 실행
+            if (currentRoute != item.route) {
+                navController.navigate(item.route) {
+                    // 동일한 스크린을 재생성하지 않고, 최상위에 올림
+                    launchSingleTop = true
+                    // 이미 스택에 있는 스크린으로 이동할 경우, 그 스크린을 최상위로 만들고, 그 위에 있던 스크린을 모두 제거
+                    restoreState = true
+                    popUpTo(navController.graph.findStartDestination().id) {
+                        saveState = true
+                    }
+                }
+            }
+        }
+    )
 }

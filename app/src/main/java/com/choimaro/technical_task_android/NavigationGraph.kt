@@ -19,19 +19,9 @@ fun NavigationGraph(
         navController = navController,
         startDestination = ScreenType.SearchScreen.route) {
         composable(route = ScreenType.SearchScreen.route) { backStackEntry ->
-//            val parentEntry = remember(backStackEntry) {
-//                navController.getBackStackEntry(ScreenType.SearchScreen.route)
-//            }
-//            val mainViewModel: MainViewModel = hiltViewModel(parentEntry)
-//            SearchScreen(navController)
             SearchScreen(navController, mainViewModel)
         }
         composable(route = ScreenType.BookMarkScreen.route) { backStackEntry ->
-//            val parentEntry = remember(backStackEntry) {
-//                navController.getBackStackEntry(ScreenType.BookMarkScreen.route)
-//            }
-//            val mainViewModel: MainViewModel = hiltViewModel(parentEntry)
-//            BookMarkScreen(navController)
             BookMarkScreen(navController, mainViewModel)
         }
     }

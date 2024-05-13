@@ -33,6 +33,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import coil.compose.rememberAsyncImagePainter
 import com.choimaro.domain.model.image.ImageModel
+import com.choimaro.technical_task_android.component.ImageModelItem
 import com.choimaro.technical_task_android.home.viewmodel.MainViewModel
 
 @Composable
@@ -44,12 +45,12 @@ fun BookMarkScreen(navHostController: NavHostController, mainViewModel: MainView
 }
 
 @Composable
-fun initialize(viewModel: MainViewModel = hiltViewModel()) {
+fun initialize(viewModel: MainViewModel) {
     viewModel.initialize()
 }
 
 @Composable
-fun BookMarkScreenStateContent(viewModel: MainViewModel = hiltViewModel()) {
+fun BookMarkScreenStateContent(viewModel: MainViewModel) {
     viewModel.getAllBookMark()
     val bookMarkList by viewModel.bookMarkList.collectAsState()
     val isClickedEditButton by viewModel.isClickEditButton.collectAsState()
@@ -89,23 +90,12 @@ fun BookMarkItem(
             modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.TopEnd
         ) {
-            Column(
-                modifier = Modifier
-                    .padding(8.dp)
-                    .wrapContentSize()
-            ) {
-                Image(
-                    painter = rememberAsyncImagePainter(imageModel.imageUrl),
-                    contentDescription = "",
-                    modifier = Modifier
-                        .height(130.dp)
-                        .fillMaxWidth()
-                        .clip(shape = RoundedCornerShape(8.dp)),
-                    contentScale = ContentScale.Crop
+            ImageModelItem(
+                imageModel = imageModel, imageModifier = Modifier
+                .height(130.dp)
+                .fillMaxWidth()
+                .clip(shape = RoundedCornerShape(8.dp))
                 )
-                Text(text = "${imageModel.displaySiteName}")
-                Text(text = imageModel.datetime!!)
-            }
             if (isClickedEditButton) {
                 Checkbox(
                     checked = checkedBookMarkList.contains(imageModel.id),
@@ -118,10 +108,4 @@ fun BookMarkItem(
 
         }
     }
-}
-private fun isChecked(checkedBookMarkList: List<ImageModel>, deleteBookMarkList: List<String>): Boolean {
-    checkedBookMarkList.forEach { checkedBookMark ->
-        if (deleteBookMarkList.any { it == checkedBookMark.id }) return true
-    }
-    return false
 }

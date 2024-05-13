@@ -45,6 +45,7 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.platform.SoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
@@ -56,6 +57,7 @@ import coil.compose.rememberAsyncImagePainter
 import com.choimaro.domain.ResponseState
 import com.choimaro.domain.model.image.ImageModel
 import com.choimaro.technical_task_android.R
+import com.choimaro.technical_task_android.component.ImageModelItem
 import com.choimaro.technical_task_android.home.viewmodel.MainViewModel
 import com.choimaro.technical_task_android.ui.theme.TechnicalTaskAndroidTypography
 import kotlinx.coroutines.Job
@@ -64,79 +66,13 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun SearchScreen(navHostController: NavHostController, mainViewModel: MainViewModel) {
-    val state by mainViewModel.imageSearchResult.collectAsState()
     HandleImageSearchResult(mainViewModel)
     Column(modifier = Modifier.fillMaxSize()) {
         SearchBar(mainViewModel)
-        Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
-        ) {
-            when (state) {
-                is ResponseState.Loading -> {
-                    // 로딩 상태 UI 표시
-                    CircularProgressIndicator()
-                }
-
-                is ResponseState.Success<*> -> {
-                    // 성공 상태 UI 표시
-                    // 예: response.data를 사용하여 데이터 표시
-                    SearchScreenStateContent(mainViewModel)
-                }
-
-                is ResponseState.Fail -> {
-                    // 실패 상태 UI 표시
-                    // 예: response.exception 메시지 표시
-                    Box(
-                        modifier = Modifier.fillMaxWidth(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            Image(
-                                painter = painterResource(id = R.drawable.ic_network_not_available),
-                                contentDescription = null,
-                                colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primary)
-                            )
-                            Spacer(modifier = Modifier.height(4.dp))
-                            Text(
-                                stringResource(id = R.string.the_connection_is_not_smooth),
-                                style = TechnicalTaskAndroidTypography.bodyLarge
-                            )
-                            Spacer(modifier = Modifier.height(4.dp))
-                            Text(
-                                stringResource(id = R.string.please_try_again_in_a_moment),
-                                style = TechnicalTaskAndroidTypography.bodyMedium
-                            )
-                        }
-                    }
-                }
-
-                is ResponseState.Init -> {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            Image(
-                                painter = painterResource(id = R.drawable.ic_search),
-                                contentDescription = null,
-                                colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primary)
-                            )
-                            Text(stringResource(id = R.string.please_enter_a_search_term))
-                        }
-                    }
-                    mainViewModel.setImageModelList(arrayListOf())
-                }
-            }
-        }
+        Spacer(modifier = Modifier.height(8.dp))
+        SearchResult(mainViewModel)
     }
 }
-
 @Composable
 fun HandleImageSearchResult(viewModel: MainViewModel) {
     val state by viewModel.imageSearchResult.collectAsState()
@@ -144,13 +80,112 @@ fun HandleImageSearchResult(viewModel: MainViewModel) {
         is ResponseState.Success<*> -> {
             viewModel.setImageModelList((state as ResponseState.Success<*>).data as List<ImageModel>)
         }
-
         else -> {}
+    }
+}
+@Composable
+fun SearchBar(
+    viewModel: MainViewModel
+) {
+    var lastValidSearch by remember { mutableStateOf("") }
+    val searchText by viewModel.searchText.collectAsState()
+    val clearButtonVisible by remember { derivedStateOf { searchText.isNotEmpty() } }
+    val keyboardController = LocalSoftwareKeyboardController.current
+
+    var job by remember { mutableStateOf<Job?>(null) }
+    val coroutineScope = rememberCoroutineScope()
+
+    LaunchedEffect(searchText) {
+        val trimmedText = searchText.trim()
+
+        if (trimmedText != lastValidSearch) {
+            job?.cancel()
+            job = coroutineScope.launch {
+                delay(1000)
+                viewModel.getImageSearchResult(trimmedText)
+                lastValidSearch = trimmedText
+            }
+        }
+    }
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        SearchTextField(searchText, viewModel, clearButtonVisible, keyboardController)
     }
 }
 
 @Composable
-fun SearchScreenStateContent(viewModel: MainViewModel = hiltViewModel()) {
+private fun SearchTextField(
+    searchText: String,
+    viewModel: MainViewModel,
+    clearButtonVisible: Boolean,
+    keyboardController: SoftwareKeyboardController?
+) {
+    OutlinedTextField(
+        value = searchText,
+        onValueChange = { value ->
+            viewModel.setSearchText(value)
+        },
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp),
+        placeholder = { Text(text = stringResource(id = R.string.search)) },
+        singleLine = true,
+        trailingIcon = {
+            if (clearButtonVisible) {
+                IconButton(onClick = { viewModel.setSearchText("") }) {
+                    Icon(
+                        imageVector = ImageVector.vectorResource(id = R.drawable.ic_clear_circle),
+                        contentDescription = "",
+                        tint = Color.Gray
+                    )
+                }
+            }
+        },
+        keyboardOptions = KeyboardOptions.Default.copy(
+            imeAction = ImeAction.Search
+        ),
+        keyboardActions = KeyboardActions(
+            onSearch = {
+                keyboardController?.hide()
+            }
+        )
+    )
+}
+@Composable
+private fun SearchResult(mainViewModel: MainViewModel) {
+    val state by mainViewModel.imageSearchResult.collectAsState()
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        when (state) {
+            is ResponseState.Loading -> {
+                // 로딩 상태 UI 표시
+                CircularProgressIndicator()
+            }
+
+            is ResponseState.Success<*> -> {
+                // 성공 상태 UI 표시
+                // 예: response.data를 사용하여 데이터 표시
+                HandleSuccessResponse(mainViewModel)
+            }
+
+            is ResponseState.Fail -> {
+                // 실패 상태 UI 표시
+                // 예: response.exception 메시지 표시
+                HandleFailResponse()
+            }
+
+            is ResponseState.Init -> {
+                HandleInitResponse(mainViewModel)
+            }
+        }
+    }
+}
+@Composable
+fun HandleSuccessResponse(viewModel: MainViewModel) {
     val imageModelList by viewModel.imageModelList.collectAsState()
 
     if (imageModelList.isNotEmpty()) {
@@ -180,7 +215,6 @@ fun SearchScreenStateContent(viewModel: MainViewModel = hiltViewModel()) {
         }
     }
 }
-
 @Composable
 fun ImageDocumentItem(
     imageModel: ImageModel,
@@ -191,98 +225,80 @@ fun ImageDocumentItem(
         shape = RoundedCornerShape(8.dp),
         elevation = CardDefaults.cardElevation(6.dp)
     ) {
-        Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.TopEnd
+        BookMarkIcon(clickIconButton, imageModel)
+        ImageModelItem(
+            imageModel = imageModel, imageModifier = Modifier
+                .height(130.dp)
+                .fillMaxWidth()
+                .clip(shape = RoundedCornerShape(8.dp))
+        )
+    }
+}
+@Composable
+private fun BookMarkIcon(
+    clickIconButton: () -> Unit,
+    imageModel: ImageModel
+) {
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.TopEnd
+    ) {
+        IconButton(
+            onClick = clickIconButton
         ) {
-            IconButton(
-                onClick = clickIconButton
-            ) {
-                Icon(
-                    imageVector = if (imageModel.isCheckedBookMark) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-                    contentDescription = "",
-                    tint = Color.Black
-                )
-            }
-        }
-        Column(
-            modifier = Modifier
-                .padding(8.dp)
-                .wrapContentSize()
-        ) {
-            Image(
-                painter = rememberAsyncImagePainter(imageModel.imageUrl),
+            Icon(
+                imageVector = if (imageModel.isCheckedBookMark) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
                 contentDescription = "",
-                modifier = Modifier
-                    .height(130.dp)
-                    .fillMaxWidth()
-                    .clip(shape = RoundedCornerShape(8.dp)),
-                contentScale = ContentScale.Crop
+                tint = Color.Black
             )
-            Text(text = "${imageModel.displaySiteName}")
-            Text(text = imageModel.datetime!!)
         }
     }
 }
 
 @Composable
-fun SearchBar(
-    viewModel: MainViewModel = hiltViewModel()
-) {
-    var lastValidSearch by remember { mutableStateOf("") }
-    val searchText by viewModel.searchText.collectAsState()
-    val clearButtonVisible by remember { derivedStateOf { searchText.isNotEmpty() } }
-    val keyboardController = LocalSoftwareKeyboardController.current
-
-    var job by remember { mutableStateOf<Job?>(null) }
-    val coroutineScope = rememberCoroutineScope()
-
-    LaunchedEffect(searchText) {
-        val trimmedText = searchText.trim()
-
-        if (trimmedText != lastValidSearch) {
-            job?.cancel()
-            job = coroutineScope.launch {
-                delay(1000)
-                viewModel.getImageSearchResult(trimmedText)
-                lastValidSearch = trimmedText
-            }
+private fun HandleFailResponse() {
+    Box(
+        modifier = Modifier.fillMaxWidth(),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Image(
+                painter = painterResource(id = R.drawable.ic_network_not_available),
+                contentDescription = null,
+                colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primary)
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                stringResource(id = R.string.the_connection_is_not_smooth),
+                style = TechnicalTaskAndroidTypography.bodyLarge
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                stringResource(id = R.string.please_try_again_in_a_moment),
+                style = TechnicalTaskAndroidTypography.bodyMedium
+            )
         }
     }
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically
+}
+@Composable
+private fun HandleInitResponse(mainViewModel: MainViewModel) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth(),
+        contentAlignment = Alignment.Center
     ) {
-        OutlinedTextField(
-            value = searchText,
-            onValueChange = { value ->
-                viewModel.setSearchText(value)
-            },
-            modifier = Modifier
-                .weight(1f)
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp),
-            placeholder = { Text(text = stringResource(id = R.string.search)) },
-            singleLine = true,
-            trailingIcon = {
-                if (clearButtonVisible) {
-                    IconButton(onClick = { viewModel.setSearchText("") }) {
-                        Icon(
-                            imageVector = ImageVector.vectorResource(id = R.drawable.ic_clear_circle),
-                            contentDescription = "",
-                            tint = Color.Gray
-                        )
-                    }
-                }
-            },
-            keyboardOptions = KeyboardOptions.Default.copy(
-                imeAction = ImeAction.Search
-            ),
-            keyboardActions = KeyboardActions(
-                onSearch = {
-                    keyboardController?.hide()
-                }
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Image(
+                painter = painterResource(id = R.drawable.ic_search),
+                contentDescription = null,
+                colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primary)
             )
-        )
+            Text(stringResource(id = R.string.please_enter_a_search_term))
+        }
     }
+    mainViewModel.setImageModelList(arrayListOf())
 }
