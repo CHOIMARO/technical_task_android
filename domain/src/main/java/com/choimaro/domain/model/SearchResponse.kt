@@ -6,5 +6,5 @@ data class SearchResponse<T>(
     @SerializedName("meta")
     val metaData: MetaData?,
     @SerializedName("documents")
-    var documents: MutableList<T>?,
+    var documents: MutableList<T>?
 )

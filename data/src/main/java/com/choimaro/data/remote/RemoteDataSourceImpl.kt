@@ -50,7 +50,7 @@ class RemoteDataSourceImpl @Inject constructor(
             }
         } catch (e: Exception) {
             e.printStackTrace()
-            return ResponseState.Fail("접속상태가 원활하지 않습니다. 잠시 후 다시 시도해 주세요.")
+            return ResponseState.Fail("")
         }
     }
     private fun generateHash(input: String): String {

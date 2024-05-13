@@ -37,7 +37,6 @@ import com.choimaro.technical_task_android.home.viewmodel.MainViewModel
 
 @Composable
 fun BookMarkScreen(navHostController: NavHostController, mainViewModel: MainViewModel) {
-    Log.e(">>>>>", "BookMarkScreen")
     initialize(mainViewModel)
     Column(modifier = Modifier.fillMaxSize()) {
         BookMarkScreenStateContent(mainViewModel)

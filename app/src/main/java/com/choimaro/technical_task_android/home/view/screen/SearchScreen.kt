@@ -1,9 +1,6 @@
 package com.choimaro.technical_task_android.home.view.screen
 
-import android.util.Log
-import android.widget.Toast
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -47,12 +44,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
-import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -82,18 +77,20 @@ fun SearchScreen(navHostController: NavHostController, mainViewModel: MainViewMo
                     // 로딩 상태 UI 표시
                     CircularProgressIndicator()
                 }
+
                 is ResponseState.Success<*> -> {
                     // 성공 상태 UI 표시
                     // 예: response.data를 사용하여 데이터 표시
-
                     SearchScreenStateContent(mainViewModel)
                 }
+
                 is ResponseState.Fail -> {
                     // 실패 상태 UI 표시
                     // 예: response.exception 메시지 표시
                     Box(
                         modifier = Modifier.fillMaxWidth(),
-                        contentAlignment = Alignment.Center) {
+                        contentAlignment = Alignment.Center
+                    ) {
                         Column(
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
@@ -103,12 +100,19 @@ fun SearchScreen(navHostController: NavHostController, mainViewModel: MainViewMo
                                 colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primary)
                             )
                             Spacer(modifier = Modifier.height(4.dp))
-                            Text(stringResource(id = R.string.you_are_not_connected), style = TechnicalTaskAndroidTypography.bodyLarge)
+                            Text(
+                                stringResource(id = R.string.you_are_not_connected),
+                                style = TechnicalTaskAndroidTypography.bodyLarge
+                            )
                             Spacer(modifier = Modifier.height(4.dp))
-                            Text(stringResource(id = R.string.please_try_again_in_a_few_minutes), style = TechnicalTaskAndroidTypography.bodyMedium)
+                            Text(
+                                stringResource(id = R.string.please_try_again_in_a_few_minutes),
+                                style = TechnicalTaskAndroidTypography.bodyMedium
+                            )
                         }
                     }
                 }
+
                 is ResponseState.Init -> {
                     Box(
                         modifier = Modifier.fillMaxWidth(.5f)
@@ -138,12 +142,13 @@ fun HandleImageSearchResult(viewModel: MainViewModel) {
         is ResponseState.Success<*> -> {
             viewModel.setImageModelList((state as ResponseState.Success<*>).data as List<ImageModel>)
         }
+
         else -> {}
     }
 }
+
 @Composable
 fun SearchScreenStateContent(viewModel: MainViewModel = hiltViewModel()) {
-    Log.e(">>>>>", "SearchScreenStateContent")
     val imageModelList by viewModel.imageModelList.collectAsState()
 
     if (imageModelList.isNotEmpty()) {
@@ -177,13 +182,13 @@ fun SearchScreenStateContent(viewModel: MainViewModel = hiltViewModel()) {
 @Composable
 fun ImageDocumentItem(
     imageModel: ImageModel,
-    clickIconButton:() -> Unit
+    clickIconButton: () -> Unit
 ) {
     Card(
         modifier = Modifier.wrapContentSize(),
         shape = RoundedCornerShape(8.dp),
         elevation = CardDefaults.cardElevation(6.dp)
-        ) {
+    ) {
         Box(
             modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.TopEnd
@@ -222,7 +227,7 @@ fun ImageDocumentItem(
 fun SearchBar(
     viewModel: MainViewModel = hiltViewModel()
 ) {
-    Log.e(">>>>>", "SearchBar")
+    var lastValidSearch by remember { mutableStateOf("") }
     val searchText by viewModel.searchText.collectAsState()
     val clearButtonVisible by remember { derivedStateOf { searchText.isNotEmpty() } }
     val keyboardController = LocalSoftwareKeyboardController.current
@@ -231,10 +236,15 @@ fun SearchBar(
     val coroutineScope = rememberCoroutineScope()
 
     LaunchedEffect(searchText) {
-        job?.cancel()  // 이전 작업이 있다면 취소
-        job = coroutineScope.launch {
-            delay(1000)  // 1초 대기
-            viewModel.getImageSearchResult(searchText)
+        val trimmedText = searchText.trim()
+
+        if (trimmedText != lastValidSearch) {
+            job?.cancel()
+            job = coroutineScope.launch {
+                delay(1000)
+                viewModel.getImageSearchResult(trimmedText)
+                lastValidSearch = trimmedText
+            }
         }
     }
     Row(
@@ -248,7 +258,8 @@ fun SearchBar(
             },
             modifier = Modifier
                 .weight(1f)
-                .fillMaxWidth(),
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp),
             placeholder = { Text(text = stringResource(id = R.string.search)) },
             singleLine = true,
             trailingIcon = {
@@ -256,7 +267,7 @@ fun SearchBar(
                     IconButton(onClick = { viewModel.setSearchText("") }) {
                         Icon(
                             imageVector = ImageVector.vectorResource(id = R.drawable.ic_clear_circle),
-                            contentDescription = "Clear",
+                            contentDescription = "",
                             tint = Color.Gray
                         )
                     }

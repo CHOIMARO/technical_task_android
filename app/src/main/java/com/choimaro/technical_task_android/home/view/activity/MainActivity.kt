@@ -1,13 +1,9 @@
 package com.choimaro.technical_task_android.home.view.activity
 
 import android.os.Bundle
-import android.util.Log
-import android.widget.ImageButton
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.viewModels
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -29,17 +25,14 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.core.view.WindowCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
@@ -65,22 +58,25 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
+
 @Composable
 fun MainScreenView() {
     val navController = rememberNavController()
     val mainViewModel: MainViewModel = hiltViewModel()
+
     Scaffold(
         topBar = {
-                    TopBar(navController = navController, mainViewModel)
-                 },
+            TopBar(navController = navController, mainViewModel)
+        },
         bottomBar = { BottomBarNavigation(navController = navController) }
     ) {
-        Box(Modifier.padding(it)){
+        Box(Modifier.padding(it)) {
             NavigationGraph(navController = navController, mainViewModel)
         }
         ShowInsertBookMarkResultToast(mainViewModel = mainViewModel)
     }
 }
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TopBar(
@@ -94,15 +90,19 @@ fun TopBar(
         title = {
             Text(
                 text =
-                    when (currentRoute) {
-                        ScreenType.SearchScreen.route -> {
-                            stringResource(id = R.string.search)
-                        }
-                        ScreenType.BookMarkScreen.route -> {
-                            stringResource(id = R.string.book_mark)
-                        }
-                        else -> {""}
+                when (currentRoute) {
+                    ScreenType.SearchScreen.route -> {
+                        stringResource(id = R.string.search)
                     }
+
+                    ScreenType.BookMarkScreen.route -> {
+                        stringResource(id = R.string.book_mark)
+                    }
+
+                    else -> {
+                        ""
+                    }
+                }
             )
         },
         actions = {
@@ -114,7 +114,7 @@ fun TopBar(
                         Button(
                             onClick = { mainViewModel.clickEditButton() }
                         ) {
-                            Text(text = "완료")
+                            Text(text = stringResource(id = R.string.complete))
                         }
                     }
                 } else {
@@ -123,7 +123,7 @@ fun TopBar(
                     ) {
                         Icon(
                             painter = painterResource(id = R.drawable.ic_edit), // 이 부분에서 자신의 편집 아이콘 리소스를 사용하세요
-                            contentDescription = "Edit"
+                            contentDescription = ""
                         )
                     }
                 }
@@ -131,6 +131,7 @@ fun TopBar(
         }
     )
 }
+
 @Composable
 fun DeleteBookMarkContent(mainViewModel: MainViewModel = hiltViewModel()) {
     val checkedListSize by mainViewModel.checkedBookMarkList.collectAsState()
@@ -194,6 +195,7 @@ fun BottomBarNavigation(navController: NavHostController) {
         }
     }
 }
+
 @Composable
 fun ShowInsertBookMarkResultToast(mainViewModel: MainViewModel) {
     val context = LocalContext.current
