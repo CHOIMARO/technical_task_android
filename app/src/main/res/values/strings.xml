@@ -4,4 +4,11 @@
 
     <string name="search">검색</string>
     <string name="book_mark">북마크</string>
+    <string name="complete">완료</string>
+    <string name="delete">삭제</string>
+    <string name="delete_item_count">%d개</string>
+    <string name="you_are_not_connected">접속상태가 원활하지 않습니다.</string>
+    <string name="please_try_again_in_a_few_minutes">잠시 후 다시 시도해 주세요.</string>
+    <string name="please_enter_search_input">검색어를 입력해 주세요.</string>
+    <string name="no_results_were_found_for_your_search">검색 결과가 없어요.</string>
 </resources>

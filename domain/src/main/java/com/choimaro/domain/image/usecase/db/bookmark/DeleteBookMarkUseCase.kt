@@ -7,7 +7,7 @@ import javax.inject.Inject
 class DeleteBookMarkUseCase @Inject constructor(
     private val bookMarkRepository: BookMarkRepository
 ) {
-    suspend operator fun invoke(bookMarkEntity: BookMarkEntity) {
-        bookMarkRepository.deleteBookMark(bookMarkEntity)
+    suspend operator fun invoke(ids: List<String>): Boolean {
+        return bookMarkRepository.deleteBookMark(ids)
     }
 }

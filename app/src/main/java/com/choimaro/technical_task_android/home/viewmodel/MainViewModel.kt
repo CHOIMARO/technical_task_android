@@ -39,8 +39,17 @@ class MainViewModel @Inject constructor(
     private val _isFavorite = MutableStateFlow(false)
     val isFavorite = _isFavorite.asStateFlow()
 
-    private val _checkedBookMarkList = MutableStateFlow(listOf<ImageModel>())
+    private val _bookMarkList = MutableStateFlow(listOf<ImageModel>())
+    val bookMarkList = _bookMarkList.asStateFlow()
+
+    private val _checkedBookMarkList = MutableStateFlow(listOf<String>())
     val checkedBookMarkList = _checkedBookMarkList.asStateFlow()
+
+    private val _isClickEditButton = MutableStateFlow(false)
+    val isClickEditButton = _isClickEditButton.asStateFlow()
+
+    private val _insertBookMarkResult = MutableStateFlow<Boolean?>(null)
+    val insertBookMarkResult = _insertBookMarkResult.asStateFlow()
 
     init {
         viewModelScope.launch {
@@ -68,7 +77,7 @@ class MainViewModel @Inject constructor(
     }
     fun setFavorite(imageModel: ImageModel) {
         if (imageModel.isCheckedBookMark) {
-            deleteBookMark(imageModel)
+            deleteBookMark(listOf(imageModel.id))
         } else {
             insertBookMark(imageModel)
         }
@@ -86,15 +95,32 @@ class MainViewModel @Inject constructor(
         _imageModelList.value = ArrayList(imageModelList)
     }
     fun getAllBookMark() = viewModelScope.launch {
-        _checkedBookMarkList.value = getAllBookMarkUseCase().map {
+        _bookMarkList.value = getAllBookMarkUseCase().map {
             mapBookMarkEntityToImageModel(it)
         }
     }
     private fun insertBookMark(imageModel: ImageModel) = viewModelScope.launch {
-        insertBookMarkUseCase(mapImageModelToBookMarkEntity(imageModel))
+        try {
+            val result = insertBookMarkUseCase(mapImageModelToBookMarkEntity(imageModel))
+            if (result) {
+                _insertBookMarkResult.value = true
+            }
+        } catch (e: Exception) {
+
+        }
     }
-    private fun deleteBookMark(imageModel: ImageModel) = viewModelScope.launch {
-        deleteBookMarkUseCase(mapImageModelToBookMarkEntity(imageModel))
+    fun deleteBookMark(ids: List<String>) = viewModelScope.launch {
+        val result = deleteBookMarkUseCase(ids)
+        if (result) {
+            initializeCheckedBookMarkList()
+            getAllBookMark()
+        } else {
+
+        }
+
+    }
+    fun initializeCheckedBookMarkList() {
+        _checkedBookMarkList.value = listOf()
     }
     private fun mapImageModelToBookMarkEntity(imageModel: ImageModel): BookMarkEntity {
         return BookMarkEntity(
@@ -117,5 +143,25 @@ class MainViewModel @Inject constructor(
             itemType = bookMarkEntity.itemType!!,
             docUrl = bookMarkEntity.docUrl
         )
+    }
+
+    fun clickEditButton() {
+        _isClickEditButton.value = !_isClickEditButton.value
+        initializeCheckedBookMarkList()
+    }
+    fun toggleBookMarkChecked(id: String) {
+        val currentIds = _checkedBookMarkList.value
+        if (currentIds.contains(id)) {
+            _checkedBookMarkList.value = currentIds - id
+        } else {
+            _checkedBookMarkList.value = currentIds + id
+        }
+    }
+
+    fun initialize() {
+        _imageSearchResult.value = ResponseState.init()
+    }
+    fun resetInsertBookMarkResult() {
+        _insertBookMarkResult.value = null // 상태를 null로 리셋
     }
 }

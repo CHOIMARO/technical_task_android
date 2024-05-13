@@ -1,11 +1,14 @@
 package com.choimaro.technical_task_android.home.view.screen
 
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -25,6 +28,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -40,11 +44,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -54,61 +62,114 @@ import com.choimaro.domain.ResponseState
 import com.choimaro.domain.model.image.ImageModel
 import com.choimaro.technical_task_android.R
 import com.choimaro.technical_task_android.home.viewmodel.MainViewModel
+import com.choimaro.technical_task_android.ui.theme.TechnicalTaskAndroidTypography
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @Composable
-fun SearchScreen(navHostController: NavHostController, viewModel: MainViewModel = hiltViewModel()) {
-    val state by viewModel.imageSearchResult.collectAsState()
-    HandleImageSearchResult(state = state, viewModel)
+fun SearchScreen(navHostController: NavHostController, mainViewModel: MainViewModel) {
+    val state by mainViewModel.imageSearchResult.collectAsState()
+    HandleImageSearchResult(mainViewModel)
     Column(modifier = Modifier.fillMaxSize()) {
-        SearchBar(viewModel) { searchText ->
-            viewModel.getImageSearchResult(searchText)
+        SearchBar(mainViewModel)
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            when (state) {
+                is ResponseState.Loading -> {
+                    // 로딩 상태 UI 표시
+                    CircularProgressIndicator()
+                }
+                is ResponseState.Success<*> -> {
+                    // 성공 상태 UI 표시
+                    // 예: response.data를 사용하여 데이터 표시
+
+                    SearchScreenStateContent(mainViewModel)
+                }
+                is ResponseState.Fail -> {
+                    // 실패 상태 UI 표시
+                    // 예: response.exception 메시지 표시
+                    Box(
+                        modifier = Modifier.fillMaxWidth(),
+                        contentAlignment = Alignment.Center) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Image(
+                                painter = painterResource(id = R.drawable.ic_network_not_available),
+                                contentDescription = null,
+                                colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primary)
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(stringResource(id = R.string.you_are_not_connected), style = TechnicalTaskAndroidTypography.bodyLarge)
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(stringResource(id = R.string.please_try_again_in_a_few_minutes), style = TechnicalTaskAndroidTypography.bodyMedium)
+                        }
+                    }
+                }
+                is ResponseState.Init -> {
+                    Box(
+                        modifier = Modifier.fillMaxWidth(.5f)
+                    ) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Image(
+                                painter = painterResource(id = R.drawable.ic_search),
+                                contentDescription = null,
+                                colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primary)
+                            )
+                            Text(stringResource(id = R.string.please_enter_search_input))
+                        }
+                    }
+                    mainViewModel.setImageModelList(arrayListOf())
+                }
+            }
         }
-        SearchScreenStateContent(viewModel)
     }
 }
 
 @Composable
-fun HandleImageSearchResult(state: ResponseState, viewModel: MainViewModel = hiltViewModel()) {
+fun HandleImageSearchResult(viewModel: MainViewModel) {
+    val state by viewModel.imageSearchResult.collectAsState()
     when (state) {
-        is ResponseState.Loading -> {
-            Log.e(">>>>>", "SearchScreen: LOADING")
-            // 로딩 상태 UI 표시
-            CircularProgressIndicator()
-        }
         is ResponseState.Success<*> -> {
-            Log.e(">>>>>", "SearchScreen: SUCCESS")
-            // 성공 상태 UI 표시
-            // 예: response.data를 사용하여 데이터 표시
-//            ImageDocumentList(state.data as List<ImageModel>)
-            viewModel.setImageModelList(state.data as List<ImageModel>)
+            viewModel.setImageModelList((state as ResponseState.Success<*>).data as List<ImageModel>)
         }
-        is ResponseState.Fail -> {
-            Log.e(">>>>>", "SearchScreen: FAILED")
-            // 실패 상태 UI 표시
-            // 예: response.exception 메시지 표시
-            Text("Error: ${state.exception}")
-        }
-        is ResponseState.Init -> {
-            Log.e(">>>>>", "SearchScreen: INIT")
-            // TODO 검색어 입력 요청 Screen 추가하기
-            viewModel.setImageModelList(arrayListOf())
-        }
+        else -> {}
     }
 }
 @Composable
 fun SearchScreenStateContent(viewModel: MainViewModel = hiltViewModel()) {
+    Log.e(">>>>>", "SearchScreenStateContent")
     val imageModelList by viewModel.imageModelList.collectAsState()
-    LazyVerticalGrid(
-        columns = GridCells.Fixed(2),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-        modifier = Modifier.padding(horizontal = 8.dp)
-    ) {
-        items(imageModelList) { imageModel ->
-            ImageDocumentItem(imageModel = imageModel, viewModel)
+
+    if (imageModelList.isNotEmpty()) {
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(2),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier.padding(horizontal = 8.dp)
+        ) {
+            items(imageModelList) { imageModel ->
+                ImageDocumentItem(imageModel = imageModel) {
+                    viewModel.setFavorite(imageModel)
+                    viewModel.getAllBookMark()
+                }
+            }
+        }
+    } else {
+        Box(
+            modifier = Modifier.fillMaxWidth(.5f),
+            contentAlignment = Alignment.Center
+        ) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(stringResource(id = R.string.no_results_were_found_for_your_search))
+            }
         }
     }
 }
@@ -116,7 +177,7 @@ fun SearchScreenStateContent(viewModel: MainViewModel = hiltViewModel()) {
 @Composable
 fun ImageDocumentItem(
     imageModel: ImageModel,
-    viewModel: MainViewModel = hiltViewModel()
+    clickIconButton:() -> Unit
 ) {
     Card(
         modifier = Modifier.wrapContentSize(),
@@ -128,10 +189,7 @@ fun ImageDocumentItem(
             contentAlignment = Alignment.TopEnd
         ) {
             IconButton(
-                onClick = {
-                    viewModel.setFavorite(imageModel)
-                    viewModel.getAllBookMark()
-                }
+                onClick = clickIconButton
             ) {
                 Icon(
                     imageVector = if (imageModel.isCheckedBookMark) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
@@ -162,9 +220,9 @@ fun ImageDocumentItem(
 
 @Composable
 fun SearchBar(
-    viewModel: MainViewModel = hiltViewModel(),
-    onTextChanged: (String) -> Unit
+    viewModel: MainViewModel = hiltViewModel()
 ) {
+    Log.e(">>>>>", "SearchBar")
     val searchText by viewModel.searchText.collectAsState()
     val clearButtonVisible by remember { derivedStateOf { searchText.isNotEmpty() } }
     val keyboardController = LocalSoftwareKeyboardController.current
@@ -176,7 +234,7 @@ fun SearchBar(
         job?.cancel()  // 이전 작업이 있다면 취소
         job = coroutineScope.launch {
             delay(1000)  // 1초 대기
-            onTextChanged(searchText)  // Delay 이후 실행할 작업
+            viewModel.getImageSearchResult(searchText)
         }
     }
     Row(
@@ -185,8 +243,8 @@ fun SearchBar(
     ) {
         OutlinedTextField(
             value = searchText,
-            onValueChange = {
-                value -> viewModel.setSearchText(value)
+            onValueChange = { value ->
+                viewModel.setSearchText(value)
             },
             modifier = Modifier
                 .weight(1f)
@@ -195,7 +253,7 @@ fun SearchBar(
             singleLine = true,
             trailingIcon = {
                 if (clearButtonVisible) {
-                    IconButton(onClick = { viewModel.setSearchText("")}) {
+                    IconButton(onClick = { viewModel.setSearchText("") }) {
                         Icon(
                             imageVector = ImageVector.vectorResource(id = R.drawable.ic_clear_circle),
                             contentDescription = "Clear",

@@ -16,12 +16,12 @@ class BookMarkRepositoryImpl @Inject constructor(
         localDataSource.getAllBookMark()
     }
 
-    override suspend fun insertBookMark(bookMarkEntity: BookMarkEntity): Long = withContext(ioDispatcher) {
+    override suspend fun insertBookMark(bookMarkEntity: BookMarkEntity): Boolean = withContext(ioDispatcher) {
         localDataSource.insertBookMark(bookMarkEntity)
     }
 
-    override suspend fun deleteBookMark(bookMarkEntity: BookMarkEntity) = withContext(ioDispatcher) {
-        localDataSource.deleteBookMark(bookMarkEntity)
+    override suspend fun deleteBookMark(ids: List<String>): Boolean = withContext(ioDispatcher) {
+        localDataSource.deleteBookMark(ids)
     }
 
     override suspend fun deleteAll() = withContext(ioDispatcher) {

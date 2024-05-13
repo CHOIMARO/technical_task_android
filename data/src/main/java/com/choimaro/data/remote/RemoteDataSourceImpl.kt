@@ -1,5 +1,6 @@
 package com.choimaro.data.remote
 
+import com.choimaro.data.R
 import com.choimaro.data.local.LocalDataSource
 import com.choimaro.data.service.KakaoService
 import com.choimaro.domain.extensions.getFormattedDate
@@ -8,6 +9,7 @@ import com.choimaro.domain.model.ErrorResponse
 import com.choimaro.domain.model.SearchListType
 import com.choimaro.domain.model.image.ImageModel
 import com.google.gson.Gson
+import java.net.UnknownHostException
 import java.security.MessageDigest
 import javax.inject.Inject
 
@@ -48,7 +50,7 @@ class RemoteDataSourceImpl @Inject constructor(
             }
         } catch (e: Exception) {
             e.printStackTrace()
-            return ResponseState.Fail(e.message ?: "")
+            return ResponseState.Fail("접속상태가 원활하지 않습니다. 잠시 후 다시 시도해 주세요.")
         }
     }
     private fun generateHash(input: String): String {

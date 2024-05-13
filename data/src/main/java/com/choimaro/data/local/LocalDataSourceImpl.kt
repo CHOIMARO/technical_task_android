@@ -12,12 +12,14 @@ class LocalDataSourceImpl @Inject constructor(
         return bookMarkDAO.getAllBookMark()
     }
 
-    override suspend fun insertBookMark(bookMarkEntity: BookMarkEntity): Long {
-        return bookMarkDAO.insert(bookMarkEntity)
+    override suspend fun insertBookMark(bookMarkEntity: BookMarkEntity): Boolean {
+        val insertCount = bookMarkDAO.insert(bookMarkEntity)
+        return insertCount > 0
     }
 
-    override suspend fun deleteBookMark(bookMarkEntity: BookMarkEntity) {
-        return bookMarkDAO.delete(bookMarkEntity.id!!)
+    override suspend fun deleteBookMark(ids: List<String>): Boolean {
+        val deletedCount = bookMarkDAO.delete(ids)
+        return deletedCount == ids.size
     }
 
     override suspend fun deleteAll() {

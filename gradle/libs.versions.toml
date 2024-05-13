@@ -26,6 +26,7 @@ okhttp = "4.10.0"
 retrofit = "2.9.0"
 roomRuntime = "2.6.1"
 splashScreenVersion = "1.0.1"
+uiTextGoogleFonts = "1.6.7"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -69,6 +70,7 @@ v2-friend = { module = "com.kakao.sdk:v2-friend", version.ref = "kakaoVersion" }
 v2-share = { module = "com.kakao.sdk:v2-share", version.ref = "kakaoVersion" }
 v2-talk = { module = "com.kakao.sdk:v2-talk", version.ref = "kakaoVersion" }
 v2-user = { module = "com.kakao.sdk:v2-user", version.ref = "kakaoVersion" }
+androidx-ui-text-google-fonts = { group = "androidx.compose.ui", name = "ui-text-google-fonts", version.ref = "uiTextGoogleFonts" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

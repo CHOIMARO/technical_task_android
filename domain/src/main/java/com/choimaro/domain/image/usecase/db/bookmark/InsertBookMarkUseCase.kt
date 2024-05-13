@@ -7,7 +7,7 @@ import javax.inject.Inject
 class InsertBookMarkUseCase @Inject constructor(
     private val bookMarkRepository: BookMarkRepository
 ) {
-    suspend operator fun invoke(bookMarkEntity: BookMarkEntity): Long {
+    suspend operator fun invoke(bookMarkEntity: BookMarkEntity): Boolean {
         return bookMarkRepository.insertBookMark(bookMarkEntity)
     }
 }
