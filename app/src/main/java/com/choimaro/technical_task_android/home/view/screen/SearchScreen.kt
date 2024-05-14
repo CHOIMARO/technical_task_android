@@ -148,16 +148,21 @@ private fun SearchTextField(
 }
 @Composable
 private fun SearchResult(mainViewModel: MainViewModel) {
-    val imageResults = mainViewModel.imageModelResults.collectAsLazyPagingItems()
-    val state = imageResults.loadState
     Box(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
     ) {
+        ClassifyScreen(mainViewModel)
+    }
+}
+
+@Composable
+fun ClassifyScreen(mainViewModel: MainViewModel) {
+    val imageResults = mainViewModel.imageModelResults.collectAsLazyPagingItems()
+    val state = imageResults?.loadState
+    if (state != null) {
         if (state.refresh is LoadState.Loading) {
             HandleInitResponse(mainViewModel)
-        } else if (state.append is LoadState.Loading) {
-            CircularProgressIndicator()
         } else if (state.refresh is LoadState.Error){
             HandleFailResponse()
         } else if (state.append is LoadState.Error) {
@@ -167,20 +172,11 @@ private fun SearchResult(mainViewModel: MainViewModel) {
         }
     }
 }
+
 @Composable
 fun HandleSuccessResponse(viewModel: MainViewModel, imageResults: LazyPagingItems<ImageModel>) {
+    val imageResults = viewModel.imageModelResults.collectAsLazyPagingItems()
     val bookMarkList by viewModel.bookMarkList.collectAsState()
-
-    // This will handle the paging logic and update the items list as more data is loaded
-    val items = remember { mutableStateListOf<ImageModel>() }
-
-    LaunchedEffect(imageResults) {
-        snapshotFlow { imageResults.itemSnapshotList }
-            .collectLatest { snapshot ->
-                items.clear()
-                items.addAll(snapshot.items)
-            }
-    }
     if (imageResults.itemCount > 0) {
         LazyVerticalGrid(
             columns = GridCells.Fixed(2),
@@ -190,9 +186,11 @@ fun HandleSuccessResponse(viewModel: MainViewModel, imageResults: LazyPagingItem
                 .padding(horizontal = 8.dp)
                 .fillMaxSize(),
         ) {
-            items(items) { item ->
-                ImageDocumentItem(imageModel = item, bookMarkList = bookMarkList) {
-                    viewModel.setFavorite(item)
+            items(imageResults.itemCount) { index ->
+                imageResults[index]?.let { imageModel ->
+                    ImageDocumentItem(imageModel = imageModel, bookMarkList = bookMarkList) {
+                        viewModel.setFavorite(imageModel)
+                    }
                 }
             }
             item {
@@ -200,7 +198,6 @@ fun HandleSuccessResponse(viewModel: MainViewModel, imageResults: LazyPagingItem
                     CircularProgressIndicator()
                 }
             }
-
         }
     } else {
         Box(
