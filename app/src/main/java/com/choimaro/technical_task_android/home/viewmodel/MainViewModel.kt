@@ -1,10 +1,16 @@
 package com.choimaro.technical_task_android.home.viewmodel
 
+import android.util.Log
+import androidx.compose.runtime.MutableState
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.LoadState
 import androidx.paging.LoadStates
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
 import androidx.paging.PagingData
+import androidx.paging.PagingSource
 import androidx.paging.cachedIn
 import com.choimaro.domain.ResponseState
 import com.choimaro.domain.entity.BookMarkEntity
@@ -18,16 +24,21 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
     private val getImageSearchFlowUseCase: GetImageSearchFlowUseCase,
-    private val getImageSearchUseCase: GetImageSearchUseCase,
     private val getAllBookMarkUseCase: GetAllBookMarkUseCase,
     private val insertBookMarkUseCase: InsertBookMarkUseCase,
     private val deleteBookMarkUseCase: DeleteBookMarkUseCase
@@ -53,8 +64,8 @@ class MainViewModel @Inject constructor(
     private val _isClickEditButton = MutableStateFlow(false)
     val isClickEditButton = _isClickEditButton.asStateFlow()
 
-    private val _imageModelList = MutableSharedFlow<PagingData<ImageModel>>()
-    val imageModelResults = _imageModelList.asSharedFlow()
+    private val _imageModelResults = MutableStateFlow<PagingData<ImageModel>>(PagingData.empty())
+    val imageModelResults = _imageModelResults.asStateFlow()
 
     init {
         viewModelScope.launch {
@@ -63,18 +74,18 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    suspend fun getImageSearchFlowResult(searchText: String) {
+    suspend fun getImageSearchFlowResult(searchText: String) = viewModelScope.launch {
         if (searchText.isNotEmpty()) {
             getImageSearchFlowUseCase(
                 query = searchText,
                 sort = "accuracy",
                 page = 1,
                 size = 80
-            ).cachedIn(viewModelScope).collectLatest {
-                _imageModelList.emit(value = it)
+            ).cachedIn(viewModelScope).collect {
+                _imageModelResults.value = it
             }
         } else {
-            _imageModelList.emit(
+            _imageModelResults.value = (
                 PagingData.empty(
                     LoadStates(
                         refresh = LoadState.Loading,
