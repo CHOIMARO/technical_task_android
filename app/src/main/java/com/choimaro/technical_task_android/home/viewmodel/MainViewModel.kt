@@ -6,7 +6,6 @@ import androidx.paging.LoadState
 import androidx.paging.LoadStates
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
-import androidx.paging.map
 import com.choimaro.domain.ResponseState
 import com.choimaro.domain.entity.BookMarkEntity
 import com.choimaro.domain.image.usecase.db.bookmark.DeleteBookMarkUseCase
@@ -22,8 +21,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -34,7 +31,7 @@ class MainViewModel @Inject constructor(
     private val getAllBookMarkUseCase: GetAllBookMarkUseCase,
     private val insertBookMarkUseCase: InsertBookMarkUseCase,
     private val deleteBookMarkUseCase: DeleteBookMarkUseCase
-): ViewModel() {
+) : ViewModel() {
     private val _isReady = MutableStateFlow(false)
     val isReady = _isReady.asStateFlow()
 
@@ -65,24 +62,34 @@ class MainViewModel @Inject constructor(
             _isReady.value = true
         }
     }
+
     suspend fun getImageSearchFlowResult(searchText: String) {
         if (searchText.isNotEmpty()) {
-            getImageSearchFlowUseCase(query = searchText, sort = "accuracy", page = 1, size = 80).cachedIn(viewModelScope).collectLatest {
+            getImageSearchFlowUseCase(
+                query = searchText,
+                sort = "accuracy",
+                page = 1,
+                size = 80
+            ).cachedIn(viewModelScope).collectLatest {
                 _imageModelList.emit(value = it)
             }
         } else {
-            _imageModelList.emit(PagingData.empty(
-                LoadStates(
-                    refresh = LoadState.Loading,
-                    prepend = LoadState.NotLoading(true),
-                    append = LoadState.NotLoading(true)
+            _imageModelList.emit(
+                PagingData.empty(
+                    LoadStates(
+                        refresh = LoadState.Loading,
+                        prepend = LoadState.NotLoading(true),
+                        append = LoadState.NotLoading(true)
+                    )
                 )
-            ))
+            )
         }
     }
+
     fun setSearchText(searchText: String) {
         _searchText.value = searchText
     }
+
     fun setFavorite(imageModel: ImageModel) {
         if (_bookMarkList.value.any { it.id == imageModel.id }) {
             deleteBookMark(listOf(imageModel.id))
@@ -90,6 +97,7 @@ class MainViewModel @Inject constructor(
             insertBookMark(imageModel)
         }
     }
+
     fun getAllBookMark() = viewModelScope.launch {
         try {
             _bookMarkList.value = getAllBookMarkUseCase().map {
@@ -99,6 +107,7 @@ class MainViewModel @Inject constructor(
             e.printStackTrace()
         }
     }
+
     private fun insertBookMark(imageModel: ImageModel) = viewModelScope.launch {
         try {
             val result = insertBookMarkUseCase(mapImageModelToBookMarkEntity(imageModel))
@@ -109,6 +118,7 @@ class MainViewModel @Inject constructor(
             e.printStackTrace()
         }
     }
+
     fun deleteBookMark(ids: List<String>) = viewModelScope.launch {
         try {
             val result = deleteBookMarkUseCase(ids)
@@ -120,9 +130,11 @@ class MainViewModel @Inject constructor(
             e.printStackTrace()
         }
     }
+
     private fun initializeCheckedBookMarkList() {
         _checkedBookMarkList.value = listOf()
     }
+
     private fun mapImageModelToBookMarkEntity(imageModel: ImageModel): BookMarkEntity {
         return BookMarkEntity(
             id = imageModel.id,
@@ -134,6 +146,7 @@ class MainViewModel @Inject constructor(
             docUrl = imageModel.docUrl
         )
     }
+
     private fun mapBookMarkEntityToImageModel(bookMarkEntity: BookMarkEntity): ImageModel {
         return ImageModel(
             id = bookMarkEntity.id!!,
@@ -150,6 +163,7 @@ class MainViewModel @Inject constructor(
         _isClickEditButton.value = !_isClickEditButton.value
         initializeCheckedBookMarkList()
     }
+
     fun toggleBookMarkChecked(id: String) {
         val currentIds = _checkedBookMarkList.value
         if (currentIds.contains(id)) {
