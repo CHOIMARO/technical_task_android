@@ -1,12 +1,7 @@
 package com.choimaro.data.module
 
-import androidx.paging.Pager
-import androidx.paging.PagingConfig
-import com.choimaro.data.local.LocalDataSource
-import com.choimaro.data.remote.PagingSource
 import com.choimaro.data.service.KakaoService
 import com.choimaro.data.util.Utils.BASE_URL
-import com.choimaro.domain.model.image.ImageModel
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
