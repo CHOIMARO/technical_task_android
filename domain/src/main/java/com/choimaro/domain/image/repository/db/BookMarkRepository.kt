@@ -1,10 +1,10 @@
 package com.choimaro.domain.image.repository.db
 
-import com.choimaro.domain.entity.BookMarkEntity
+import com.choimaro.domain.model.ImageModel
 
 interface BookMarkRepository {
-    suspend fun getAllBookMark(): List<BookMarkEntity>
-    suspend fun insertBookMark(bookMarkEntity: BookMarkEntity): Boolean
+    suspend fun getAllBookMark(): List<ImageModel>
+    suspend fun insertBookMark(imageModel: ImageModel): Boolean
     suspend fun deleteBookMark(ids: List<String>): Boolean
     suspend fun deleteAll()
 }

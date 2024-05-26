@@ -1,9 +1,6 @@
-package com.choimaro.domain.model.image
+package com.choimaro.domain.model.kakaodocument
 
-import com.choimaro.domain.model.BaseDocument
 import com.google.gson.annotations.SerializedName
-import java.security.MessageDigest
-import java.text.SimpleDateFormat
 import java.util.Date
 
 data class ImageDocument(

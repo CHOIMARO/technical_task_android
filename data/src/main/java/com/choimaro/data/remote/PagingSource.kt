@@ -1,6 +1,5 @@
 package com.choimaro.data.remote
 
-import android.util.Log
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import com.choimaro.data.local.LocalDataSource
@@ -8,7 +7,7 @@ import com.choimaro.data.service.KakaoService
 import com.choimaro.data.util.Utils.generateHash
 import com.choimaro.domain.extensions.getFormattedDate
 import com.choimaro.domain.model.SearchListType
-import com.choimaro.domain.model.image.ImageModel
+import com.choimaro.domain.model.ImageModel
 import retrofit2.HttpException
 import javax.inject.Inject
 
@@ -30,7 +29,6 @@ class PagingSource @Inject constructor(
                             imageUrl = imageDocument.imageUrl ?: "",
                             displaySiteName = imageDocument.displaySiteName ?: "",
                             datetime = imageDocument.dateTime?.getFormattedDate() ?: "Unknown date",
-                            itemType = SearchListType.IMAGE,
                             docUrl = imageDocument.docUrl ?: "",
                             isCheckedBookMark = false,
                             id = generateHash(imageDocument.imageUrl + imageDocument.docUrl + SearchListType.IMAGE.name)
