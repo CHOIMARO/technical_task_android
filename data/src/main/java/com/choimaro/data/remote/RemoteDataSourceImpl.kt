@@ -1,12 +1,8 @@
 package com.choimaro.data.remote
 
-import android.util.Log
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
-import androidx.paging.PagingSource
-import androidx.paging.map
-import com.choimaro.data.R
 import com.choimaro.data.local.LocalDataSource
 import com.choimaro.data.service.KakaoService
 import com.choimaro.data.util.Utils.generateHash
@@ -14,13 +10,9 @@ import com.choimaro.domain.extensions.getFormattedDate
 import com.choimaro.domain.ResponseState
 import com.choimaro.domain.model.ErrorResponse
 import com.choimaro.domain.model.SearchListType
-import com.choimaro.domain.model.image.ImageModel
+import com.choimaro.domain.model.ImageModel
 import com.google.gson.Gson
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.map
-import java.net.UnknownHostException
-import java.security.MessageDigest
 import javax.inject.Inject
 
 class RemoteDataSourceImpl @Inject constructor(
@@ -39,12 +31,11 @@ class RemoteDataSourceImpl @Inject constructor(
                     val checkedBookMarkList = localDataSource.getAllBookMark()
                     val imageModelList = response.body()?.documents?.map { imageDocument ->
                         ImageModel(
-                            thumbnailUrl = imageDocument.thumbnailUrl,
-                            imageUrl = imageDocument.imageUrl,
-                            displaySiteName = imageDocument.displaySiteName,
+                            thumbnailUrl = imageDocument.thumbnailUrl ?: "",
+                            imageUrl = imageDocument.imageUrl ?: "",
+                            displaySiteName = imageDocument.displaySiteName ?: "",
                             datetime = imageDocument.dateTime?.getFormattedDate() ?: "Unknown date",
-                            itemType = SearchListType.IMAGE,
-                            docUrl = imageDocument.docUrl,
+                            docUrl = imageDocument.docUrl ?: "",
                             isCheckedBookMark = checkedBookMarkList.any { it.id == generateHash(imageDocument.imageUrl + imageDocument.docUrl + SearchListType.IMAGE.name) },
                             id = generateHash(imageDocument.imageUrl + imageDocument.docUrl + SearchListType.IMAGE.name)
                         )

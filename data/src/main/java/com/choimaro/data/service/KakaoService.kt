@@ -2,7 +2,7 @@ package com.choimaro.data.service
 
 import com.choimaro.data.BuildConfig
 import com.choimaro.domain.model.SearchResponse
-import com.choimaro.domain.model.image.ImageDocument
+import com.choimaro.domain.model.kakaodocument.ImageDocument
 import retrofit2.Response
 import retrofit2.http.GET
 import retrofit2.http.Headers

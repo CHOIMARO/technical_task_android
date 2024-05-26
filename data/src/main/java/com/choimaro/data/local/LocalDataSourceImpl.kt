@@ -1,19 +1,18 @@
 package com.choimaro.data.local
 
 import com.choimaro.data.db.dao.BookMarkDAO
-import com.choimaro.data.module.CoroutinesQualifiers
-import com.choimaro.domain.entity.BookMarkEntity
+import com.choimaro.data.db.entity.ImageBookMarkEntity
 import javax.inject.Inject
 
 class LocalDataSourceImpl @Inject constructor(
     private val bookMarkDAO: BookMarkDAO
 ): LocalDataSource {
-    override suspend fun getAllBookMark(): List<BookMarkEntity> {
+    override suspend fun getAllBookMark(): List<ImageBookMarkEntity> {
         return bookMarkDAO.getAllBookMark()
     }
 
-    override suspend fun insertBookMark(bookMarkEntity: BookMarkEntity): Boolean {
-        val insertCount = bookMarkDAO.insert(bookMarkEntity)
+    override suspend fun insertBookMark(imageBookMarkEntity: ImageBookMarkEntity): Boolean {
+        val insertCount = bookMarkDAO.insert(imageBookMarkEntity)
         return insertCount > 0
     }
 

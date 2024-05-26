@@ -1,38 +1,23 @@
 package com.choimaro.technical_task_android.home.viewmodel
 
-import android.util.Log
-import androidx.compose.runtime.MutableState
-import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.LoadState
 import androidx.paging.LoadStates
-import androidx.paging.Pager
-import androidx.paging.PagingConfig
 import androidx.paging.PagingData
-import androidx.paging.PagingSource
 import androidx.paging.cachedIn
+import com.choimaro.data.db.entity.ImageBookMarkEntity
+import com.choimaro.data.db.entity.toBookMarkEntity
 import com.choimaro.domain.ResponseState
-import com.choimaro.domain.entity.BookMarkEntity
 import com.choimaro.domain.image.usecase.db.bookmark.DeleteBookMarkUseCase
 import com.choimaro.domain.image.usecase.db.bookmark.GetAllBookMarkUseCase
 import com.choimaro.domain.image.usecase.db.bookmark.InsertBookMarkUseCase
 import com.choimaro.domain.image.usecase.image.GetImageSearchFlowUseCase
-import com.choimaro.domain.image.usecase.image.GetImageSearchUseCase
-import com.choimaro.domain.model.image.ImageModel
+import com.choimaro.domain.model.ImageModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.filterNotNull
-import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -86,14 +71,14 @@ class MainViewModel @Inject constructor(
             }
         } else {
             _imageModelResults.value = (
-                PagingData.empty(
-                    LoadStates(
-                        refresh = LoadState.Loading,
-                        prepend = LoadState.NotLoading(true),
-                        append = LoadState.NotLoading(true)
+                    PagingData.empty(
+                        LoadStates(
+                            refresh = LoadState.Loading,
+                            prepend = LoadState.NotLoading(true),
+                            append = LoadState.NotLoading(true)
+                        )
                     )
-                )
-            )
+                    )
         }
     }
 
@@ -111,9 +96,7 @@ class MainViewModel @Inject constructor(
 
     fun getAllBookMark() = viewModelScope.launch {
         try {
-            _bookMarkList.value = getAllBookMarkUseCase().map {
-                mapBookMarkEntityToImageModel(it)
-            }
+            _bookMarkList.value = getAllBookMarkUseCase()
         } catch (e: Exception) {
             e.printStackTrace()
         }
@@ -121,7 +104,7 @@ class MainViewModel @Inject constructor(
 
     private fun insertBookMark(imageModel: ImageModel) = viewModelScope.launch {
         try {
-            val result = insertBookMarkUseCase(mapImageModelToBookMarkEntity(imageModel))
+            val result = insertBookMarkUseCase(imageModel)
             if (result) {
                 getAllBookMark()
             }
@@ -144,30 +127,6 @@ class MainViewModel @Inject constructor(
 
     private fun initializeCheckedBookMarkList() {
         _checkedBookMarkList.value = listOf()
-    }
-
-    private fun mapImageModelToBookMarkEntity(imageModel: ImageModel): BookMarkEntity {
-        return BookMarkEntity(
-            id = imageModel.id,
-            thumbnailUrl = imageModel.thumbnailUrl,
-            imageUrl = imageModel.imageUrl,
-            displaySiteName = imageModel.displaySiteName,
-            datetime = imageModel.datetime,
-            itemType = imageModel.itemType,
-            docUrl = imageModel.docUrl
-        )
-    }
-
-    private fun mapBookMarkEntityToImageModel(bookMarkEntity: BookMarkEntity): ImageModel {
-        return ImageModel(
-            id = bookMarkEntity.id!!,
-            thumbnailUrl = bookMarkEntity.thumbnailUrl,
-            imageUrl = bookMarkEntity.imageUrl,
-            displaySiteName = bookMarkEntity.displaySiteName,
-            datetime = bookMarkEntity.datetime,
-            itemType = bookMarkEntity.itemType!!,
-            docUrl = bookMarkEntity.docUrl
-        )
     }
 
     fun clickEditButton() {
