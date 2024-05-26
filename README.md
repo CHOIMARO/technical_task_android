@@ -49,7 +49,7 @@
 - 기존에 xml 기반 앱을 구현했었으나, 이번 기회를 통해 Compose의 강력한 기능을 배웠습니다. 다소 아쉬운 부분들이 있었으나, 부족함을 발판 삼아 더욱 성장해 나갈 수 있는 기회였습니다. 값진 기회주셔서 감사드립니다.
 
 # 고칠 점
-- API로부터 받은 모델을 데이터 모델로 바꾸는 과정 최적화하기 toEntity & toDomain
+- ~~API로부터 받은 모델을 데이터 모델로 바꾸는 과정 최적화하기 toEntity & toDomain~~ 2024.05.26 완료
 - DB로부터 받은 Like 데이터와 데이터 모델에 isLike 필드를 추가해서 Flow, combine으로 받아서 리턴하기
 - viewModel에서 받는 modelList 자체를 useCase를 사용해서 받아보기
 - Exception 처리하기
