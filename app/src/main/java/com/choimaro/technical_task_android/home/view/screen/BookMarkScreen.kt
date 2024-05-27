@@ -30,15 +30,9 @@ import com.choimaro.technical_task_android.home.viewmodel.MainViewModel
 
 @Composable
 fun BookMarkScreen(navHostController: NavHostController, mainViewModel: MainViewModel) {
-    initialize(mainViewModel)
     Column(modifier = Modifier.fillMaxSize()) {
         BookMarkScreenStateContent(mainViewModel)
     }
-}
-
-@Composable
-fun initialize(viewModel: MainViewModel) {
-    viewModel.initialize()
 }
 
 @Composable

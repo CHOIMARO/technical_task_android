@@ -13,7 +13,6 @@ import javax.inject.Inject
 
 class PagingSource @Inject constructor(
     private val kakaoService: KakaoService,
-    private val localDataSource: LocalDataSource,
     private val query: String,
     private val sort: String,
     private val size: Int

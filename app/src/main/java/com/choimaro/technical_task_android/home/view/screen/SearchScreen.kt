@@ -168,7 +168,6 @@ fun ClassifyScreen(mainViewModel: MainViewModel) {
 
 @Composable
 fun HandleSuccessResponse(viewModel: MainViewModel, imageResults: LazyPagingItems<ImageModel>) {
-    val imageResults = viewModel.imageModelResults.collectAsLazyPagingItems()
     val bookMarkList by viewModel.bookMarkList.collectAsState()
     if (imageResults.itemCount > 0) {
         LazyVerticalGrid(

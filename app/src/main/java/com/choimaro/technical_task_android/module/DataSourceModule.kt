@@ -1,6 +1,6 @@
 package com.choimaro.technical_task_android.module
 
-import com.choimaro.data.db.dao.BookMarkDAO
+import com.choimaro.data.db.dao.ImageBookMarkDAO
 import com.choimaro.data.local.LocalDataSource
 import com.choimaro.data.remote.RemoteDataSource
 import com.choimaro.data.service.KakaoService
@@ -15,8 +15,8 @@ import javax.inject.Singleton
 class DataSourceModule {
     @Singleton
     @Provides
-    fun provideLocalDataSource(bookMarkDAO: BookMarkDAO) = LocalDataSource(bookMarkDAO)
+    fun provideLocalDataSource(bookMarkDAO: ImageBookMarkDAO) = LocalDataSource(bookMarkDAO)
     @Singleton
     @Provides
-    fun provideRemoteDataSource(localDataSource: LocalDataSource, kakaoService: KakaoService) = RemoteDataSource(localDataSource, kakaoService)
+    fun provideRemoteDataSource(kakaoService: KakaoService) = RemoteDataSource(kakaoService)
 }
