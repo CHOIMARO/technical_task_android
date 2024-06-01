@@ -18,12 +18,14 @@ import com.choimaro.domain.image.usecase.db.bookmark.InsertBookMarkUseCase
 import com.choimaro.domain.image.usecase.image.GetImageSearchFlowUseCase
 import com.choimaro.domain.model.ImageModel
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -52,6 +54,10 @@ class MainViewModel @Inject constructor(
     private val _imageModelResults = MutableStateFlow<PagingData<ImageModel>>(PagingData.empty())
     val imageModelResults = _imageModelResults.asStateFlow()
 
+    var lastSearchText: String = ""
+    private var searchJob: Job? = null
+
+
     init {
         viewModelScope.launch {
             delay(1000)
@@ -59,38 +65,41 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    suspend fun getImageSearchFlowResult(searchText: String) = viewModelScope.launch {
-        if (searchText.isNotEmpty()) {
-            try {
-                val getImageSearchFlow = getImageSearchFlowUseCase(
-                    query = searchText,
-                    sort = "accuracy",
-                    page = 1,
-                    size = 5
-                ).cachedIn(viewModelScope)
-                val imageBookMarkFlow = getAllBookMarkUseCase()
+    suspend fun getImageSearchFlowResult(searchText: String) {
+        searchJob?.cancel()
+        searchJob = viewModelScope.launch {
+            if (searchText.isNotEmpty()) {
+                try {
+                    lastSearchText = searchText
+                    val getImageSearchFlow = getImageSearchFlowUseCase(
+                        query = searchText,
+                        sort = "accuracy",
+                        page = 1,
+                        size = 80
+                    ).cachedIn(viewModelScope)
+                    val imageBookMarkFlow = getAllBookMarkUseCase()
 
-                getImageSearchFlow.combine(imageBookMarkFlow) { imageModelList, bookMarkList ->
-                    imageModelList.map { imageModel ->
-                        updateBookMarkStatus(imageModel, bookMarkList)
-                     }
-                }.cachedIn(viewModelScope).collectLatest {
-                    _imageModelResults.emit(it)
+                    getImageSearchFlow.combine(imageBookMarkFlow) { imageModelList, bookMarkList ->
+                        imageModelList.map { imageModel ->
+                            updateBookMarkStatus(imageModel, bookMarkList)
+                        }
+                    }.cachedIn(viewModelScope).collectLatest {
+                        _imageModelResults.emit(it)
+                    }
+                } catch (e: Exception) {
+                    Log.e(">>>>>", "${e.message}")
                 }
-
-            } catch (e: Exception) {
-                Log.e(">>>>>", "${e.message}")
-            }
-        } else {
-            _imageModelResults.emit(
-                PagingData.empty(
-                    LoadStates(
-                        refresh = LoadState.Loading,
-                        prepend = LoadState.NotLoading(true),
-                        append = LoadState.NotLoading(true)
+            } else {
+                _imageModelResults.emit(
+                    PagingData.empty(
+                        LoadStates(
+                            refresh = LoadState.Loading,
+                            prepend = LoadState.NotLoading(true),
+                            append = LoadState.NotLoading(true)
+                        )
                     )
                 )
-            )
+            }
         }
     }
     private fun updateBookMarkStatus(imageModel: ImageModel, bookMarkList: List<ImageModel>): ImageModel {
@@ -104,7 +113,7 @@ class MainViewModel @Inject constructor(
 
     fun setFavorite(imageModel: ImageModel) {
         viewModelScope.launch {
-            if (_bookMarkList.value.any { it.id == imageModel.id }) {
+            if (imageModel.isCheckedBookMark) {
                 deleteBookMark(listOf(imageModel.id))
             } else {
                 insertBookMark(imageModel)
@@ -124,10 +133,7 @@ class MainViewModel @Inject constructor(
 
     private fun insertBookMark(imageModel: ImageModel) = viewModelScope.launch {
         try {
-            val result = insertBookMarkUseCase(imageModel)
-            if (result) {
-                getAllBookMark()
-            }
+            insertBookMarkUseCase(imageModel)
         } catch (e: Exception) {
             e.printStackTrace()
         }
@@ -135,11 +141,8 @@ class MainViewModel @Inject constructor(
 
     fun deleteBookMark(ids: List<String>) = viewModelScope.launch {
         try {
-            val result = deleteBookMarkUseCase(ids)
-            if (result) {
-                initializeCheckedBookMarkList()
-                getAllBookMark()
-            }
+            deleteBookMarkUseCase(ids)
+            _checkedBookMarkList.value = arrayListOf()
         } catch (e: Exception) {
             e.printStackTrace()
         }
