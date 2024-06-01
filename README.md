@@ -52,7 +52,6 @@
 - ~~API로부터 받은 모델을 데이터 모델로 바꾸는 과정 최적화하기 toEntity & toDomain~~ 2024.05.26 완료
 - ~~쓸모 없는 dataSourceImpl 지우고 dataSource만 사용하기~~ 2024.05.26 완료
 - ~~DB로부터 받은 Like 데이터와 데이터 모델에 isLike 필드를 추가해서 Flow, combine으로 받아서 리턴하기~~ 2024.06.01
-- viewModel에서 받는 modelList 자체를 useCase를 사용해서 받아보기
 - Exception 처리하기
 - 이미지 클릭 시 상세페이지로 이동하도록 구현해보기
 - App / Presentation / Domain / Data 모듈로 나누기
