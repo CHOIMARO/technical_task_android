@@ -83,13 +83,15 @@ fun SearchBar(
     val coroutineScope = rememberCoroutineScope()
 
     LaunchedEffect(searchText) {
-        val trimmedText = searchText.trim()
-        if (trimmedText != lastValidSearch) {
-            job?.cancel()
-            job = coroutineScope.launch {
-                delay(1000)
-                launch { viewModel.getImageSearchFlowResult(trimmedText) }
-                lastValidSearch = trimmedText
+        if (viewModel.lastSearchText != searchText) {
+            val trimmedText = searchText.trim()
+            if (trimmedText != lastValidSearch) {
+                job?.cancel()
+                job = coroutineScope.launch {
+                    delay(1000)
+                    launch { viewModel.getImageSearchFlowResult(trimmedText) }
+                    lastValidSearch = trimmedText
+                }
             }
         }
     }
@@ -152,23 +154,20 @@ private fun SearchResult(mainViewModel: MainViewModel) {
 @Composable
 fun ClassifyScreen(mainViewModel: MainViewModel) {
     val imageResults = mainViewModel.imageModelResults.collectAsLazyPagingItems()
-    val state = imageResults?.loadState
-    if (state != null) {
-        if (state.refresh is LoadState.Loading) {
-            HandleInitResponse(mainViewModel)
-        } else if (state.refresh is LoadState.Error){
-            HandleFailResponse()
-        } else if (state.append is LoadState.Error) {
-            HandleFailResponse()
-        } else {
-            HandleSuccessResponse(mainViewModel, imageResults)
-        }
+    val state = imageResults.loadState
+    if (state.refresh is LoadState.Loading) {
+        HandleInitResponse()
+    } else if (state.refresh is LoadState.Error){
+        HandleFailResponse()
+    } else if (state.append is LoadState.Error) {
+        HandleFailResponse()
+    } else {
+        HandleSuccessResponse(mainViewModel, imageResults)
     }
 }
 
 @Composable
 fun HandleSuccessResponse(viewModel: MainViewModel, imageResults: LazyPagingItems<ImageModel>) {
-    val bookMarkList by viewModel.bookMarkList.collectAsState()
     if (imageResults.itemCount > 0) {
         LazyVerticalGrid(
             columns = GridCells.Fixed(2),
@@ -180,7 +179,7 @@ fun HandleSuccessResponse(viewModel: MainViewModel, imageResults: LazyPagingItem
         ) {
             items(imageResults.itemCount) { index ->
                 imageResults[index]?.let { imageModel ->
-                    ImageDocumentItem(imageModel = imageModel, bookMarkList = bookMarkList) {
+                    ImageDocumentItem(imageModel = imageModel) {
                         viewModel.setFavorite(imageModel)
                     }
                 }
@@ -207,7 +206,6 @@ fun HandleSuccessResponse(viewModel: MainViewModel, imageResults: LazyPagingItem
 @Composable
 fun ImageDocumentItem(
     imageModel: ImageModel,
-    bookMarkList: List<ImageModel>,
     clickIconButton: () -> Unit
 ) {
     Card(
@@ -215,7 +213,7 @@ fun ImageDocumentItem(
         shape = RoundedCornerShape(8.dp),
         elevation = CardDefaults.cardElevation(6.dp)
     ) {
-        BookMarkIcon(clickIconButton, imageModel, bookMarkList)
+        BookMarkIcon(clickIconButton, imageModel)
         ImageModelItem(
             imageModel = imageModel, imageModifier = Modifier
                 .height(130.dp)
@@ -227,8 +225,7 @@ fun ImageDocumentItem(
 @Composable
 private fun BookMarkIcon(
     clickIconButton: () -> Unit,
-    imageModel: ImageModel,
-    bookMarkList: List<ImageModel>
+    imageModel: ImageModel
 ) {
     Box(
         modifier = Modifier.fillMaxSize(),
@@ -238,7 +235,7 @@ private fun BookMarkIcon(
             onClick = clickIconButton
         ) {
             Icon(
-                imageVector = if (bookMarkList.any { it.id == imageModel.id }) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                imageVector = if (imageModel.isCheckedBookMark) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
                 contentDescription = "",
                 tint = Color.Black
             )
@@ -274,7 +271,7 @@ private fun HandleFailResponse() {
     }
 }
 @Composable
-private fun HandleInitResponse(mainViewModel: MainViewModel) {
+private fun HandleInitResponse() {
     Box(
         modifier = Modifier
             .fillMaxWidth(),
