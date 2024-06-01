@@ -2,7 +2,7 @@ package com.choimaro.data.db
 
 import androidx.room.Database
 import androidx.room.RoomDatabase
-import com.choimaro.data.db.dao.BookMarkDAO
+import com.choimaro.data.db.dao.ImageBookMarkDAO
 import com.choimaro.data.db.entity.ImageBookMarkEntity
 
 @Database(
@@ -11,7 +11,7 @@ import com.choimaro.data.db.entity.ImageBookMarkEntity
     exportSchema = false
 )
 abstract class DatabaseManager : RoomDatabase() {
-    abstract fun bookMarKDao(): BookMarkDAO
+    abstract fun imageBookMarKDao(): ImageBookMarkDAO
 
     companion object {
         const val DATABASE_NAME = "DatabaseManager.db"

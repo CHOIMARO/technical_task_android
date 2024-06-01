@@ -3,6 +3,7 @@ package com.choimaro.data.remote
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
+import androidx.paging.cachedIn
 import com.choimaro.data.local.LocalDataSource
 import com.choimaro.data.service.KakaoService
 import com.choimaro.data.util.Utils
@@ -13,10 +14,10 @@ import com.choimaro.domain.model.ImageModel
 import com.choimaro.domain.model.SearchListType
 import com.google.gson.Gson
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
 
 class RemoteDataSource @Inject constructor(
-    private val localDataSource: LocalDataSource,
     private val kakaoService: KakaoService
 ) {
     suspend fun getImageSearchResult(
@@ -24,11 +25,10 @@ class RemoteDataSource @Inject constructor(
         sort: String,
         page: Int,
         size: Int
-    ): ResponseState {
+    ): Flow<ResponseState> = flow {
         try {
             kakaoService.searchImage(query, sort, page, size).let { response ->
                 if (response.isSuccessful) {
-                    val checkedBookMarkList = localDataSource.getAllBookMark()
                     val imageModelList = response.body()?.documents?.map { imageDocument ->
                         ImageModel(
                             thumbnailUrl = imageDocument.thumbnailUrl ?: "",
@@ -36,28 +36,23 @@ class RemoteDataSource @Inject constructor(
                             displaySiteName = imageDocument.displaySiteName ?: "",
                             datetime = imageDocument.dateTime?.getFormattedDate() ?: "Unknown date",
                             docUrl = imageDocument.docUrl ?: "",
-                            isCheckedBookMark = checkedBookMarkList.any { it.id == Utils.generateHash(
-                                imageDocument.imageUrl + imageDocument.docUrl + SearchListType.IMAGE.name
-                            )
-                            },
                             id = Utils.generateHash(imageDocument.imageUrl + imageDocument.docUrl + SearchListType.IMAGE.name)
                         )
                     } ?: arrayListOf()
-
-                    return ResponseState.Success(imageModelList)
+                    emit(ResponseState.Success(imageModelList))
                 } else {
                     val errorResponse = response.errorBody()?.string()?.let {
                         Gson().fromJson(it, ErrorResponse::class.java)
                     }
-                    return ResponseState.Fail( errorResponse?.message ?: "")
+                    emit(ResponseState.Fail(errorResponse?.message ?: ""))
                 }
             }
         } catch (e: Exception) {
             e.printStackTrace()
-            return ResponseState.Fail("")
+            emit(ResponseState.Fail(""))
         }
     }
-    suspend fun getImageSearchResultFlow(
+    fun getImageSearchResultFlow(
         query: String,
         sort: String,
         page: Int,
@@ -68,7 +63,7 @@ class RemoteDataSource @Inject constructor(
                 pageSize = size,
                 enablePlaceholders = false
             ),
-            pagingSourceFactory = { PagingSource(kakaoService, localDataSource, query, sort, size) }
+            pagingSourceFactory = { PagingSource(kakaoService, query, sort, size) }
         ).flow
     }
 }

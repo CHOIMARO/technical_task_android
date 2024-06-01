@@ -1,13 +1,14 @@
 package com.choimaro.data.local
 
-import com.choimaro.data.db.dao.BookMarkDAO
+import com.choimaro.data.db.dao.ImageBookMarkDAO
 import com.choimaro.data.db.entity.ImageBookMarkEntity
+import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
 class LocalDataSource @Inject constructor(
-    private val bookMarkDAO: BookMarkDAO
+    private val bookMarkDAO: ImageBookMarkDAO
 ) {
-    suspend fun getAllBookMark(): List<ImageBookMarkEntity> {
+    fun getAllImageBookMark(): Flow<List<ImageBookMarkEntity>> {
         return bookMarkDAO.getAllBookMark()
     }
 

@@ -21,10 +21,11 @@ class RepositoryModule {
     @Singleton
     @Provides
     fun provideImageRepository(
+        localDataSource: LocalDataSource,
         remoteDataSource: RemoteDataSource,
         @CoroutinesQualifiers.IoDispatcher coroutinesDisPatcher: CoroutineDispatcher
     ): ImageRepository {
-        return ImageRepositoryImpl(remoteDataSource, coroutinesDisPatcher)
+        return ImageRepositoryImpl(localDataSource, remoteDataSource, coroutinesDisPatcher)
     }
     @Singleton
     @Provides

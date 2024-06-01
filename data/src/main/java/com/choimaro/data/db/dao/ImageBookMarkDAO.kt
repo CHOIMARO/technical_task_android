@@ -5,18 +5,19 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import com.choimaro.data.db.entity.ImageBookMarkEntity
+import kotlinx.coroutines.flow.Flow
 
 @Dao
-interface BookMarkDAO {
+interface ImageBookMarkDAO {
     @Query("SELECT * FROM book_mark")
-    fun getAllBookMark(): List<ImageBookMarkEntity>
+    fun getAllBookMark(): Flow<List<ImageBookMarkEntity>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insert(bookMarkEntity: ImageBookMarkEntity): Long
+    suspend fun insert(bookMarkEntity: ImageBookMarkEntity): Long
 
     @Query("DELETE FROM book_mark WHERE id IN (:ids)")
-    fun delete(ids: List<String>): Int
+    suspend fun delete(ids: List<String>): Int
 
     @Query("DELETE FROM book_mark")
-    fun deleteAll()
+    suspend fun deleteAll()
 }

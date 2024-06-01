@@ -6,7 +6,6 @@ import com.choimaro.domain.image.usecase.db.bookmark.DeleteBookMarkUseCase
 import com.choimaro.domain.image.usecase.db.bookmark.GetAllBookMarkUseCase
 import com.choimaro.domain.image.usecase.db.bookmark.InsertBookMarkUseCase
 import com.choimaro.domain.image.usecase.image.GetImageSearchFlowUseCase
-import com.choimaro.domain.image.usecase.image.GetImageSearchUseCase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -18,18 +17,22 @@ import javax.inject.Singleton
 class UseCaseModule {
     @Singleton
     @Provides
-    fun provideGetImageSearchUseCase(imageRepository: ImageRepository) = GetImageSearchUseCase(imageRepository)
+    fun provideGetImageSearchFlowUseCase(imageRepository: ImageRepository) =
+        GetImageSearchFlowUseCase(imageRepository)
+
     @Singleton
     @Provides
-    fun provideGetImageSearchFlowUseCase(imageRepository: ImageRepository) = GetImageSearchFlowUseCase(imageRepository)
+    fun provideDeleteBookMarkUseCase(bookMarkRepository: BookMarkRepository) =
+        DeleteBookMarkUseCase(bookMarkRepository)
+
     @Singleton
     @Provides
-    fun provideDeleteBookMarkUseCase(bookMarkRepository: BookMarkRepository) = DeleteBookMarkUseCase(bookMarkRepository)
+    fun provideGetAllBookMarkUseCase(bookMarkRepository: BookMarkRepository) =
+        GetAllBookMarkUseCase(bookMarkRepository)
+
     @Singleton
     @Provides
-    fun provideGetAllBookMarkUseCase(bookMarkRepository: BookMarkRepository) = GetAllBookMarkUseCase(bookMarkRepository)
-    @Singleton
-    @Provides
-    fun provideInsertBookMarkUseCase(bookMarkRepository: BookMarkRepository) = InsertBookMarkUseCase(bookMarkRepository)
+    fun provideInsertBookMarkUseCase(bookMarkRepository: BookMarkRepository) =
+        InsertBookMarkUseCase(bookMarkRepository)
 
 }
