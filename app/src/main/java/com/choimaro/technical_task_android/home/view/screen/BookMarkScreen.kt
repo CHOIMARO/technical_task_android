@@ -29,15 +29,15 @@ import com.choimaro.technical_task_android.component.ImageModelItem
 import com.choimaro.technical_task_android.home.viewmodel.MainViewModel
 
 @Composable
-fun BookMarkScreen(navHostController: NavHostController, mainViewModel: MainViewModel) {
+fun BookMarkScreen(navHostController: NavHostController, viewModel: MainViewModel) {
     Column(modifier = Modifier.fillMaxSize()) {
-        BookMarkScreenStateContent(mainViewModel)
+        viewModel.getAllBookMark()
+        BookMarkScreenStateContent(viewModel)
     }
 }
 
 @Composable
 fun BookMarkScreenStateContent(viewModel: MainViewModel) {
-    viewModel.getAllBookMark()
     val bookMarkList by viewModel.bookMarkList.collectAsState()
     val isClickedEditButton by viewModel.isClickEditButton.collectAsState()
     val checkedBookMarkList by viewModel.checkedBookMarkList.collectAsState()
@@ -48,7 +48,7 @@ fun BookMarkScreenStateContent(viewModel: MainViewModel) {
         modifier = Modifier.padding(horizontal = 8.dp)
     ) {
         items(bookMarkList) { imageModel ->
-            BookMarkItem(viewModel, imageModel,isClickedEditButton, checkedBookMarkList)
+            BookMarkItem(viewModel, imageModel, isClickedEditButton, checkedBookMarkList)
         }
     }
 }
@@ -77,17 +77,17 @@ fun BookMarkItem(
             contentAlignment = Alignment.TopEnd
         ) {
             ImageModelItem(
-                imageModel = imageModel, imageModifier = Modifier
-                .height(130.dp)
-                .fillMaxWidth()
-                .clip(shape = RoundedCornerShape(8.dp))
-                )
+                imageModel = imageModel,
+                imageModifier = Modifier
+                    .height(130.dp)
+                    .fillMaxWidth()
+                    .clip(shape = RoundedCornerShape(8.dp))
+            )
             if (isClickedEditButton) {
                 Checkbox(
                     checked = checkedBookMarkList.contains(imageModel.id),
                     onCheckedChange = {
                         viewModel.toggleBookMarkChecked(imageModel.id)
-                        viewModel.getAllBookMark()
                     },
                 )
             }
