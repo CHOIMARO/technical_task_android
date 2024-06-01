@@ -2,12 +2,11 @@ package com.choimaro.data.remote
 
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
-import com.choimaro.data.local.LocalDataSource
 import com.choimaro.data.service.KakaoService
 import com.choimaro.data.util.Utils.generateHash
 import com.choimaro.domain.extensions.getFormattedDate
-import com.choimaro.domain.model.SearchListType
 import com.choimaro.domain.model.ImageModel
+import com.choimaro.domain.model.SearchListType
 import retrofit2.HttpException
 import javax.inject.Inject
 
@@ -49,7 +48,9 @@ class PagingSource @Inject constructor(
 
     override fun getRefreshKey(state: PagingState<Int, ImageModel>): Int? {
         return state.anchorPosition?.let { position ->
-            state.closestPageToPosition(position)?.prevKey?.plus(1) ?: state.closestPageToPosition(position)?.nextKey?.minus(1)
+            state.closestPageToPosition(position)?.prevKey?.plus(1) ?: state.closestPageToPosition(
+                position
+            )?.nextKey?.minus(1)
         }
     }
 }
