@@ -8,6 +8,7 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import retrofit2.Retrofit
 import javax.inject.Singleton
 
 @Module
@@ -18,5 +19,5 @@ class DataSourceModule {
     fun provideLocalDataSource(bookMarkDAO: ImageBookMarkDAO) = LocalDataSource(bookMarkDAO)
     @Singleton
     @Provides
-    fun provideRemoteDataSource(kakaoService: KakaoService) = RemoteDataSource(kakaoService)
+    fun provideRemoteDataSource(kakaoService: KakaoService, retrofit: Retrofit) = RemoteDataSource(kakaoService, retrofit)
 }

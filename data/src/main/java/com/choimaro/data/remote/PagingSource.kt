@@ -5,13 +5,17 @@ import androidx.paging.PagingState
 import com.choimaro.data.service.KakaoService
 import com.choimaro.data.util.Utils.generateHash
 import com.choimaro.domain.extensions.getFormattedDate
+import com.choimaro.domain.model.ErrorResponse
 import com.choimaro.domain.model.ImageModel
 import com.choimaro.domain.model.SearchListType
 import retrofit2.HttpException
+import retrofit2.Response
+import retrofit2.Retrofit
 import javax.inject.Inject
 
 class PagingSource @Inject constructor(
     private val kakaoService: KakaoService,
+    private val retrofit: Retrofit,
     private val query: String,
     private val sort: String,
     private val size: Int
@@ -38,7 +42,8 @@ class PagingSource @Inject constructor(
                         nextKey = if (response.body()?.metaData?.isEnd == true) null else currentPage + 1
                     )
                 } else {
-                    LoadResult.Error(HttpException(response))
+                    val errorResponse = parseError(response)
+                    LoadResult.Error(Exception(errorResponse.message))
                 }
             }
         } catch (e: Exception) {
@@ -52,5 +57,11 @@ class PagingSource @Inject constructor(
                 position
             )?.nextKey?.minus(1)
         }
+    }
+    private fun parseError(response: Response<*>): ErrorResponse {
+        val converter = retrofit.responseBodyConverter<ErrorResponse>(ErrorResponse::class.java, arrayOfNulls(0))
+        return response.errorBody()?.let {
+            converter.convert(it)
+        } ?: ErrorResponse("UnknownError", "An unknown error occurred")
     }
 }

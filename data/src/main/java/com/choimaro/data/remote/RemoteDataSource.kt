@@ -15,10 +15,12 @@ import com.choimaro.domain.model.SearchListType
 import com.google.gson.Gson
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import retrofit2.Retrofit
 import javax.inject.Inject
 
 class RemoteDataSource @Inject constructor(
-    private val kakaoService: KakaoService
+    private val kakaoService: KakaoService,
+    private val retrofit: Retrofit
 ) {
     suspend fun getImageSearchResult(
         query: String,
@@ -63,7 +65,7 @@ class RemoteDataSource @Inject constructor(
                 pageSize = size,
                 enablePlaceholders = false
             ),
-            pagingSourceFactory = { PagingSource(kakaoService, query, sort, size) }
+            pagingSourceFactory = { PagingSource(kakaoService, retrofit, query, sort, size) }
         ).flow
     }
 }
