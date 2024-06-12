@@ -22,6 +22,7 @@ import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -63,11 +64,11 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @Composable
-fun SearchScreen(navHostController: NavHostController, mainViewModel: MainViewModel) {
+fun SearchScreen(navHostController: NavHostController, viewModel: MainViewModel) {
     Column(modifier = Modifier.fillMaxSize()) {
-        SearchBar(mainViewModel)
+        SearchBar(viewModel)
         Spacer(modifier = Modifier.height(8.dp))
-        SearchResult(mainViewModel)
+        SearchResult(viewModel, navHostController)
     }
 }
 @Composable
@@ -137,22 +138,24 @@ private fun SearchTextField(
         keyboardActions = KeyboardActions(
             onSearch = {
                 keyboardController?.hide()
+                viewModel.lastSearchText = ""
+                viewModel.setSearchText(searchText)
             }
         )
     )
 }
 @Composable
-private fun SearchResult(mainViewModel: MainViewModel) {
+private fun SearchResult(viewModel: MainViewModel, navHostController: NavHostController) {
     Box(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
     ) {
-        ClassifyScreen(mainViewModel)
+        ClassifyScreen(viewModel, navHostController)
     }
 }
 
 @Composable
-fun ClassifyScreen(mainViewModel: MainViewModel) {
+fun ClassifyScreen(mainViewModel: MainViewModel, navHostController: NavHostController) {
     val imageResults = mainViewModel.imageModelResults.collectAsLazyPagingItems()
     val state = imageResults.loadState
     if (state.refresh is LoadState.Loading) {
@@ -162,12 +165,12 @@ fun ClassifyScreen(mainViewModel: MainViewModel) {
     } else if (state.append is LoadState.Error) {
         HandleFailResponse()
     } else {
-        HandleSuccessResponse(mainViewModel, imageResults)
+        HandleSuccessResponse(mainViewModel, imageResults, navHostController)
     }
 }
 
 @Composable
-fun HandleSuccessResponse(viewModel: MainViewModel, imageResults: LazyPagingItems<ImageModel>) {
+fun HandleSuccessResponse(viewModel: MainViewModel, imageResults: LazyPagingItems<ImageModel>, navHostController: NavHostController) {
     if (imageResults.itemCount > 0) {
         LazyVerticalGrid(
             columns = GridCells.Fixed(2),
@@ -179,9 +182,15 @@ fun HandleSuccessResponse(viewModel: MainViewModel, imageResults: LazyPagingItem
         ) {
             items(imageResults.itemCount) { index ->
                 imageResults[index]?.let { imageModel ->
-                    ImageDocumentItem(imageModel = imageModel) {
-                        viewModel.setFavorite(imageModel)
-                    }
+                    ImageDocumentItem(
+                        imageModel = imageModel,
+                        clickIconButton =  {
+                            viewModel.setFavorite(imageModel)
+                        },
+                        clickCard =  {
+                            viewModel.openImageDetail(navHostController, imageModel)
+                        }
+                    )
                 }
             }
             item {
@@ -203,15 +212,18 @@ fun HandleSuccessResponse(viewModel: MainViewModel, imageResults: LazyPagingItem
         }
     }
 }
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ImageDocumentItem(
     imageModel: ImageModel,
-    clickIconButton: () -> Unit
+    clickIconButton: () -> Unit,
+    clickCard: () -> Unit
 ) {
     Card(
         modifier = Modifier.wrapContentSize(),
         shape = RoundedCornerShape(8.dp),
-        elevation = CardDefaults.cardElevation(6.dp)
+        elevation = CardDefaults.cardElevation(6.dp),
+        onClick = clickCard
     ) {
         BookMarkIcon(clickIconButton, imageModel)
         ImageModelItem(
