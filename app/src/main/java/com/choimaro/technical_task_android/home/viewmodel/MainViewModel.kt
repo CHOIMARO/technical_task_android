@@ -3,29 +3,26 @@ package com.choimaro.technical_task_android.home.viewmodel
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavHostController
 import androidx.paging.LoadState
 import androidx.paging.LoadStates
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
-import androidx.paging.filter
 import androidx.paging.map
-import com.choimaro.data.db.entity.ImageBookMarkEntity
-import com.choimaro.domain.ResponseState
 import com.choimaro.domain.image.usecase.db.bookmark.DeleteBookMarkUseCase
 import com.choimaro.domain.image.usecase.db.bookmark.GetAllBookMarkUseCase
 import com.choimaro.domain.image.usecase.db.bookmark.InsertBookMarkUseCase
 import com.choimaro.domain.image.usecase.image.GetImageSearchFlowUseCase
 import com.choimaro.domain.model.ImageModel
+import com.choimaro.technical_task_android.ui.ImageDetailNav
+import com.choimaro.technical_task_android.util.NavigationUtils
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -164,5 +161,9 @@ class MainViewModel @Inject constructor(
         } else {
             _checkedBookMarkList.value = currentIds + id
         }
+    }
+
+    fun openImageDetail(navHostController: NavHostController, imageModel: ImageModel) {
+        NavigationUtils.navigate(navHostController, ImageDetailNav.navigateWithArg(imageModel))
     }
 }

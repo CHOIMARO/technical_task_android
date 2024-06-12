@@ -29,15 +29,15 @@ import com.choimaro.technical_task_android.component.ImageModelItem
 import com.choimaro.technical_task_android.home.viewmodel.MainViewModel
 
 @Composable
-fun BookMarkScreen(navHostController: NavHostController, viewModel: MainViewModel) {
+fun BookmarkScreen(navHostController: NavHostController, viewModel: MainViewModel) {
     Column(modifier = Modifier.fillMaxSize()) {
         viewModel.getAllBookMark()
-        BookMarkScreenStateContent(viewModel)
+        BookmarkScreenStateContent(navHostController, viewModel)
     }
 }
 
 @Composable
-fun BookMarkScreenStateContent(viewModel: MainViewModel) {
+fun BookmarkScreenStateContent(navHostController: NavHostController, viewModel: MainViewModel) {
     val bookMarkList by viewModel.bookMarkList.collectAsState()
     val isClickedEditButton by viewModel.isClickEditButton.collectAsState()
     val checkedBookMarkList by viewModel.checkedBookMarkList.collectAsState()
@@ -48,14 +48,15 @@ fun BookMarkScreenStateContent(viewModel: MainViewModel) {
         modifier = Modifier.padding(horizontal = 8.dp)
     ) {
         items(bookMarkList) { imageModel ->
-            BookMarkItem(viewModel, imageModel, isClickedEditButton, checkedBookMarkList)
+            BookmarkItem(navHostController, viewModel, imageModel, isClickedEditButton, checkedBookMarkList)
         }
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun BookMarkItem(
+fun BookmarkItem(
+    navHostController: NavHostController,
     viewModel: MainViewModel,
     imageModel: ImageModel,
     isClickedEditButton: Boolean,
@@ -69,6 +70,8 @@ fun BookMarkItem(
         onClick = {
             if (isClickedEditButton) {
                 viewModel.toggleBookMarkChecked(imageModel.id)
+            } else {
+                viewModel.openImageDetail(navHostController, imageModel)
             }
         }
     ) {

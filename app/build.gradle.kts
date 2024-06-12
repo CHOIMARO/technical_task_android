@@ -109,5 +109,8 @@ dependencies {
     implementation (libs.androidx.paging.runtime.ktx)
     implementation (libs.androidx.paging.compose)
 
+    //GSON
+    implementation (libs.gson)
+
 
 }
