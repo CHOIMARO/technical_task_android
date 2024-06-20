@@ -25,7 +25,7 @@ fun ImageModelItem(imageModel: ImageModel, imageModifier: Modifier) {
             modifier = imageModifier,
             contentScale = ContentScale.Crop
         )
-        Text(text = "${imageModel.displaySiteName}")
-        imageModel.datetime?.let { Text(text = it) }
+        Text(text = imageModel.displaySiteName)
+        Text(text = imageModel.datetime)
     }
 }
