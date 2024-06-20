@@ -55,4 +55,5 @@
 - ~~Exception 처리하기~~ 2024.06.09
 - ~~확장성을 위해 Navigation 기능 통합하기~~ 2024.06.12
 - ~~이미지 클릭 시 상세페이지로 이동하도록 구현해보기~~ 2024.06.20
+- 다른 Multi Activity 구현해보기 (카카오에 다른 API를 통해 검색하기)
 - App / Presentation / Domain / Data 모듈로 나누기
